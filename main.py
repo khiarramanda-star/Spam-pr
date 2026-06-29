@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# main.py - OTP BOMBER ULTIMATE v16.0
+# main.py - OTP BOMBER ULTIMATE v17.0 - CLEAN EDITION
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import sys
@@ -10,7 +10,7 @@ import json
 from colorama import Fore, Style, init
 from datetime import datetime
 
-# ==================== OBFUSCATED IMPORTS ====================
+# ==================== IMPORTS ====================
 from db_cloud import UserManager as AuthSystem
 from spam_engine import run_single_round, run_infinite, show_apis
 
@@ -61,10 +61,14 @@ def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
 def print_header():
-  print(f"\n{C.CYAN}╔══════════════════════════════════════════╗")
-    print(f"{C.CYAN}║{C.WHITE}          🔥 OTP BOMBER V16.0 - CLOUD EDITION        {C.CYAN}║")
-    print(f"{C.CYAN}║{C.DIM}          30+ API - SECURE AUTH - ADMIN HIDDEN         {C.CYAN}║")
-    print(f"{C.CYAN}╚══════════════════════════════════════════╝{C.RESET}\n")
+    print(f"\n{C.CYAN}╔═══════════════════════════════════════════════════════════╗")
+    print(f"{C.CYAN}║{C.WHITE}     🔥 OTP BOMBER V17.0{C.CYAN} - {C.GREEN}CLOUD EDITION        {C.CYAN}║")
+    print(f"{C.CYAN}║{C.DIM}     30+ API • SECURE AUTH • ADMIN HIDDEN           {C.CYAN}║")
+    print(f"{C.CYAN}╚═══════════════════════════════════════════════════════════╝{C.RESET}\n")
+
+def print_header_small():
+    print(f"\n{C.YELLOW}[ {C.WHITE}OTP BOMBER V17.0 {C.DIM}| {C.GREEN}CLOUD EDITION {C.YELLOW}]{C.RESET}")
+    print(f"{C.DIM}  30+ API • Secure Auth • Admin Hidden{C.RESET}\n")
 
 def get_input(prompt, color=C.CYAN):
     return input(f"{color}[?] {prompt}: {C.WHITE}")
@@ -102,25 +106,32 @@ def auth_menu():
     print()
     print(f"  {C.GREEN}[1]{C.RESET} Login")
     print(f"  {C.GREEN}[2]{C.RESET} Register")
-    print(f"  {C.GREEN}[3]{C.RESET} Exit")
+    print(f"  {C.GREEN}[3]{C.RESET} Kembali")
+    print(f"  {C.GREEN}[4]{C.RESET} Exit")
     print()
-    choice = get_input("Pilih menu (1/2/3)")
+    choice = get_input("Pilih menu (1/2/3/4)")
     
     if choice == "1":
         return login()
     elif choice == "2":
         return register()
     elif choice == "3":
+        clear_screen()
+        print_header()
+        print(f"{C.YELLOW}↩️  Kembali ke menu utama...{C.RESET}")
+        time.sleep(0.5)
+        return auth_menu()
+    elif choice == "4":
         print(f"\n{C.GREEN}Goodbye!{C.RESET}")
         sys.exit(0)
     else:
-        print(f"{C.RED}Invalid choice!{C.RESET}")
+        print(f"{C.RED}❌ Invalid choice!{C.RESET}")
         time.sleep(1)
         return auth_menu()
 
 def login():
     clear_screen()
-    print_header()
+    print_header_small()
     print_boxed("🔐 LOGIN", C.CYAN)
     print()
     
@@ -144,29 +155,31 @@ def login():
 
 def register():
     clear_screen()
-    print_header()
+    print_header_small()
     print_boxed("📝 REGISTER", C.GREEN)
     print()
     
     username = get_input("Username (min 3 chars)")
     if len(username) < 3:
-        print(f"{C.RED}Username minimal 3 karakter!{C.RESET}")
+        print(f"{C.RED}❌ Username minimal 3 karakter!{C.RESET}")
         time.sleep(1)
         return register()
     
     password = get_password("Password (min 4 chars)")
     if len(password) < 4:
-        print(f"{C.RED}Password minimal 4 karakter!{C.RESET}")
+        print(f"{C.RED}❌ Password minimal 4 karakter!{C.RESET}")
         time.sleep(1)
         return register()
     
     confirm = get_password("Confirm Password")
     if password != confirm:
-        print(f"{C.RED}Password tidak cocok!{C.RESET}")
+        print(f"{C.RED}❌ Password tidak cocok!{C.RESET}")
         time.sleep(1)
         return register()
     
     device_id = platform.node()
+    
+    print(f"\n{C.DIM}📱 Device ID: {device_id}{C.RESET}")
     
     loading("Registering to cloud...", 1.5)
     
@@ -178,6 +191,7 @@ def register():
         return login()
     else:
         print(f"\n{C.RED}❌ {message}{C.RESET}")
+        print(f"{C.YELLOW}💡 Coba periksa koneksi internet atau coba lagi.{C.RESET}")
         input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
         return auth_menu()
 
@@ -196,7 +210,7 @@ def main_menu(username):
     
     while True:
         clear_screen()
-        print_header()
+        print_header_small()
         
         # User info
         status_text = 'ADMIN' if is_admin else 'PREMIUM' if is_premium else 'TRIAL'
@@ -235,8 +249,9 @@ def main_menu(username):
                 try:
                     run_single_round(phone, threads)
                 except Exception as e:
-                    print(f"{C.RED}Error: {e}{C.RESET}")
-                input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                    print(f"{C.RED}❌ Error: {e}{C.RESET}")
+                input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
+                
             elif choice == "2":
                 phone = get_input("Nomor target")
                 try:
@@ -244,20 +259,23 @@ def main_menu(username):
                 except KeyboardInterrupt:
                     pass
                 except Exception as e:
-                    print(f"{C.RED}Error: {e}{C.RESET}")
-                input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                    print(f"{C.RED}❌ Error: {e}{C.RESET}")
+                input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
+                
             elif choice == "3":
                 show_apis()
-                input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
+                
             elif choice == "4":
                 admin_panel()
+                
             elif choice == "5":
                 clear_session()
-                print(f"{C.GREEN}Logout!{C.RESET}")
+                print(f"{C.GREEN}✅ Logout berhasil!{C.RESET}")
                 time.sleep(1)
                 return auth_menu()
             else:
-                print(f"{C.RED}Pilihan tidak valid!{C.RESET}")
+                print(f"{C.RED}❌ Pilihan tidak valid!{C.RESET}")
                 time.sleep(1)
         else:
             status_text = 'PREMIUM' if is_premium else 'TRIAL'
@@ -266,48 +284,61 @@ def main_menu(username):
             print()
             print(f"  {C.GREEN}[1]{C.RESET} 🔥 Single Round")
             print(f"  {C.GREEN}[2]{C.RESET} 📊 Check APIs")
-            print(f"  {C.GREEN}[3]{C.RESET} 🚪 Logout")
             if not is_premium:
-                print(f"  {C.GREEN}[4]{C.RESET} 🛒 Beli Premium")
-            print()
-            choice = get_input("Pilih menu (1-4)" if not is_premium else "Pilih menu (1-3)")
+                print(f"  {C.GREEN}[3]{C.RESET} 🛒 Beli Premium")
+                print(f"  {C.GREEN}[4]{C.RESET} 🚪 Logout")
+                print()
+                choice = get_input("Pilih menu (1-4)")
+            else:
+                print(f"  {C.GREEN}[3]{C.RESET} 🚪 Logout")
+                print()
+                choice = get_input("Pilih menu (1-3)")
             
             if choice == "1":
                 if quota <= 0 and not is_premium:
-                    print(f"{C.RED}❌ Kuota habis! Beli premium.{C.RESET}")
+                    print(f"{C.RED}❌ Kuota trial habis! Beli premium.{C.RESET}")
                     time.sleep(2)
                     continue
                 phone = get_input("Nomor target")
                 try:
                     run_single_round(phone, 1)
                 except Exception as e:
-                    print(f"{C.RED}Error: {e}{C.RESET}")
+                    print(f"{C.RED}❌ Error: {e}{C.RESET}")
                 if not is_premium:
                     try:
                         AuthSystem.update_user(username, quota=quota-1)
                         quota -= 1
                     except:
                         pass
-                input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
+                
             elif choice == "2":
                 show_apis()
-                input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
+                
             elif choice == "3":
+                if not is_premium:
+                    show_buy_guide()
+                else:
+                    clear_session()
+                    print(f"{C.GREEN}✅ Logout berhasil!{C.RESET}")
+                    time.sleep(1)
+                    return auth_menu()
+                    
+            elif choice == "4" and not is_premium:
                 clear_session()
-                print(f"{C.GREEN}Logout!{C.RESET}")
+                print(f"{C.GREEN}✅ Logout berhasil!{C.RESET}")
                 time.sleep(1)
                 return auth_menu()
-            elif choice == "4" and not is_premium:
-                show_buy_guide()
             else:
-                print(f"{C.RED}Pilihan tidak valid!{C.RESET}")
+                print(f"{C.RED}❌ Pilihan tidak valid!{C.RESET}")
                 time.sleep(1)
 
 # ==================== ADMIN PANEL ====================
 def admin_panel():
     while True:
         clear_screen()
-        print_header()
+        print_header_small()
         print(f"{C.RED}👑 ADMIN PANEL{C.RESET}\n")
         print(f"  {C.GREEN}[1]{C.RESET} 📋 List Users")
         print(f"  {C.GREEN}[2]{C.RESET} 👑 Activate Premium")
@@ -321,18 +352,22 @@ def admin_panel():
             try:
                 users = AuthSystem.load_users()
                 print(f"\n{C.CYAN}📋 USERS:{C.RESET}")
-                print(f"{C.DIM}{'─' * 50}{C.RESET}")
+                print(f"{C.DIM}──────────────────────────────────────────────────{C.RESET}")
+                found = False
                 for u, data in users.items():
                     if u in ['admin', 'root']:
                         continue
+                    found = True
                     prem = f"{C.GREEN}✅{C.RESET}" if data.get('is_premium') else f"{C.RED}❌{C.RESET}"
                     status = data.get('status', 'trial').upper()
                     quota = data.get('quota', 0)
                     print(f"  {u:15} | {status:8} | Quota: {quota:3} | {prem}")
-                print(f"{C.DIM}{'─' * 50}{C.RESET}")
+                if not found:
+                    print(f"  {C.DIM}Belum ada user terdaftar.{C.RESET}")
+                print(f"{C.DIM}──────────────────────────────────────────────────{C.RESET}")
             except Exception as e:
-                print(f"{C.RED}Error loading users: {e}{C.RESET}")
-            input(f"\n{C.YELLOW}Tekan Enter...{C.RESET}")
+                print(f"{C.RED}❌ Error loading users: {e}{C.RESET}")
+            input(f"\n{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
             
         elif choice == "2":
             username = get_input("Username untuk activate premium")
@@ -342,7 +377,7 @@ def admin_panel():
                 else:
                     print(f"{C.RED}❌ Failed! User not found.{C.RESET}")
             except Exception as e:
-                print(f"{C.RED}Error: {e}{C.RESET}")
+                print(f"{C.RED}❌ Error: {e}{C.RESET}")
             time.sleep(1)
             
         elif choice == "3":
@@ -355,7 +390,7 @@ def admin_panel():
                 success, msg = AuthSystem.delete_user(username)
                 print(f"{C.GREEN if success else C.RED}{'✅' if success else '❌'} {msg}{C.RESET}")
             except Exception as e:
-                print(f"{C.RED}Error: {e}{C.RESET}")
+                print(f"{C.RED}❌ Error: {e}{C.RESET}")
             time.sleep(1)
             
         elif choice == "4":
@@ -366,7 +401,7 @@ def admin_panel():
             return
         
         else:
-            print(f"{C.RED}Pilihan tidak valid!{C.RESET}")
+            print(f"{C.RED}❌ Pilihan tidak valid!{C.RESET}")
             time.sleep(1)
 
 # ==================== UTILITY ====================
@@ -382,7 +417,7 @@ def get_thread_count():
 
 def show_buy_guide():
     clear_screen()
-    print_header()
+    print_header_small()
     print_boxed("🛒 BELI PREMIUM", C.GOLD)
     print()
     print(f"  {C.WHITE}Harga    : {C.GREEN}Rp 25.000{C.RESET}")
@@ -391,7 +426,7 @@ def show_buy_guide():
     print()
     print(f"{C.YELLOW}🔗 https://wa.me/{AuthSystem.ADMIN_WA}{C.RESET}")
     print()
-    input(f"{C.YELLOW}Tekan Enter...{C.RESET}")
+    input(f"{C.YELLOW}Tekan Enter untuk kembali...{C.RESET}")
 
 # ==================== MAIN ====================
 def main():
@@ -414,7 +449,7 @@ def main():
         print(f"\n{C.YELLOW}Exit by user...{C.RESET}")
         sys.exit(0)
     except Exception as e:
-        print(f"{C.RED}Error: {e}{C.RESET}")
+        print(f"{C.RED}❌ Error: {e}{C.RESET}")
         sys.exit(1)
 
 if __name__ == "__main__":
