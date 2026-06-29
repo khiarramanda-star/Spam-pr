@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# main.py - Spammer OTP WhatsApp
+# main.py - Spammer OTP WhatsApp (FULL FIXED)
 
 import sys
 import time
@@ -156,14 +156,13 @@ def main():
                         quota = user.get("quota", 0)
                     continue
                 
-                # FIX: Tambah phone input
                 phone = log_input("Nomor target (08xx / +62xx): ").strip()
                 if not phone:
                     log_error("Nomor tidak boleh kosong!")
                     continue
                 
                 from main_engine import run_single_round
-                success = run_single_round(phone, threads=1)  # <--- FIX: passing phone
+                success = run_single_round(phone, threads=1)
                 
                 if use_quota(device_id):
                     user = check_user(device_id)
@@ -216,7 +215,6 @@ def main():
             choice = log_input("Pilih menu (1/2/3): ").strip()
             
             if choice == "1":
-                # FIX: Tambah phone input
                 phone = log_input("Nomor target (08xx / +62xx): ").strip()
                 if not phone:
                     log_error("Nomor tidak boleh kosong!")
@@ -230,19 +228,18 @@ def main():
                 except:
                     threads = 1
                 from main_engine import run_single_round
-                run_single_round(phone, threads=threads)  # <--- FIX: passing phone
+                run_single_round(phone, threads=threads)
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
             elif choice == "2":
-                # FIX: Tambah phone input
                 phone = log_input("Nomor target (08xx / +62xx): ").strip()
                 if not phone:
                     log_error("Nomor tidak boleh kosong!")
                     continue
                 
                 from main_engine import run_infinite_loop
-                run_infinite_loop(phone)  # <--- FIX: passing phone
+                run_infinite_loop(phone)
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
