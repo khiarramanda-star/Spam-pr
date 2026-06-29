@@ -156,8 +156,14 @@ def main():
                         quota = user.get("quota", 0)
                     continue
                 
+                # FIX: Tambah phone input
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 from main_engine import run_single_round
-                success = run_single_round(threads=1)
+                success = run_single_round(phone, threads=1)  # <--- FIX: passing phone
                 
                 if use_quota(device_id):
                     user = check_user(device_id)
@@ -210,6 +216,12 @@ def main():
             choice = log_input("Pilih menu (1/2/3): ").strip()
             
             if choice == "1":
+                # FIX: Tambah phone input
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 thread_choice = show_thread_menu()
                 try:
                     threads = int(thread_choice) if thread_choice.strip() else 1
@@ -218,13 +230,19 @@ def main():
                 except:
                     threads = 1
                 from main_engine import run_single_round
-                run_single_round(threads=threads)
+                run_single_round(phone, threads=threads)  # <--- FIX: passing phone
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
             elif choice == "2":
+                # FIX: Tambah phone input
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 from main_engine import run_infinite_loop
-                run_infinite_loop()
+                run_infinite_loop(phone)  # <--- FIX: passing phone
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
