@@ -385,22 +385,3 @@ USER_AGENTS = [
     "Figma/124.0.0 (Macintosh; Intel Mac OS X 10_15_7)",
     "Figma/124.0.0 (Android 14; Google Pixel 7 Pro)",
 ]
-
-def get_random_user_agent():
-    """Return a random user agent from the list"""
-    import random
-    return random.choice(USER_AGENTS)
-
-def get_user_agents():
-    """Return the full list of user agents"""
-    return USER_AGENTS
-
-def get_user_agent_count():
-    """Return total number of user agents"""
-    return len(USER_AGENTS)
-
-# ==================== TEST ====================
-if __name__ == "__main__":
-    print(f"Total User Agents: {get_user_agent_count()}")
-    print("\nRandom User Agent:")
-    print(get_random_user_agent())
