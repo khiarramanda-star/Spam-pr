@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# main.py - Spammer OTP WhatsApp (FIXED)
+# main.py - Spammer OTP WhatsApp (FULL FIXED)
 
 import sys
 import time
@@ -156,8 +156,13 @@ def main():
                         quota = user.get("quota", 0)
                     continue
                 
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 from main_engine import run_single_round
-                success = run_single_round(threads=1)  # FIX: panggil tanpa phone, input di dalam
+                success = run_single_round(phone, threads=1)
                 
                 if use_quota(device_id):
                     user = check_user(device_id)
@@ -210,6 +215,11 @@ def main():
             choice = log_input("Pilih menu (1/2/3): ").strip()
             
             if choice == "1":
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 thread_choice = show_thread_menu()
                 try:
                     threads = int(thread_choice) if thread_choice.strip() else 1
@@ -218,13 +228,18 @@ def main():
                 except:
                     threads = 1
                 from main_engine import run_single_round
-                run_single_round(threads=threads)  # FIX: panggil tanpa phone, input di dalam
+                run_single_round(phone, threads=threads)
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
             elif choice == "2":
+                phone = log_input("Nomor target (08xx / +62xx): ").strip()
+                if not phone:
+                    log_error("Nomor tidak boleh kosong!")
+                    continue
+                
                 from main_engine import run_infinite_loop
-                run_infinite_loop()  # FIX: panggil tanpa parameter
+                run_infinite_loop(phone)
                 log_info("Tekan Enter untuk kembali ke menu...")
                 input()
             
