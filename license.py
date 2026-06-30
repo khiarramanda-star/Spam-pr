@@ -79,7 +79,7 @@ def firebase_put(path, data):
 # ================================================================
 # CONSTANTS
 # ================================================================
-VERSION = "3.1.1"
+VERSION = "1.2 By Khenz"
 YEAR = "2026 - 2027"
 TOOLS_NAME = "Spammer OTP WhatsApp (Premium)"
 
@@ -134,7 +134,7 @@ def log_header():
 # ADMIN NUMBER CHECK (UNTUK KONTAK ADMIN)
 # ================================================================
 
-ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
+ADMIN_NUMBERS = ["000000000000", "62881024917665", "+62881024917665"]
 
 def is_admin_number(phone):
     phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
