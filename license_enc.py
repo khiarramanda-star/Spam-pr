@@ -1,41 +1,664 @@
-#!/usr/bin/env python3
-# ============================================================
-# 🔐 PROTECTED SCRIPT - Multi-Layer Encryption
-# Lapisan: Base64 → Zlib → XOR → Base64
-# Tanpa password, langsung eksekusi
-# ============================================================
-
+import os
 import sys
-import base64
-import zlib
+import hashlib
+import platform
+import requests
+import subprocess
+import re
+import json
+import time
+import random
+import string
+from datetime import datetime
+from colorama import Fore, Style
 
-ENCRYPTED = """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"""
+# ==================== SUPABASE CONFIG (HARDCODE) ====================
+SUPABASE_URL = "https://wrarikomspvbmsigtasi.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyYXJpa29tc3B2Ym1zaWd0YXNpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjMxMzc0NCwiZXhwIjoyMDk3ODg5NzQ0fQ.IpmLPFb-YQJbXj49czsZTou2k3PCMRjNPNR1HmAQ-sU"
 
-def decrypt(encrypted: str) -> str:
-    # Layer 4: Base64 decode
-    step1 = base64.b64decode(encrypted)
-    
-    # Layer 3: XOR (ambil kunci dari awal)
-    xor_key = step1[:32]
-    ciphertext = step1[32:]
-    step2 = bytes([ciphertext[i] ^ xor_key[i % len(xor_key)] for i in range(len(ciphertext))])
-    
-    # Layer 2: Zlib decompress
-    step3 = zlib.decompress(step2)
-    
-    # Layer 1: Base64 decode
-    step4 = base64.b64decode(step3)
-    
-    return step4.decode('utf-8')
+# ==================== TABLES ====================
+TABLE_USERS = "users"
+TABLE_CONFIG = "config"
+TABLE_FINGERPRINTS = "fingerprints"
+TABLE_USAGE_LOGS = "usage_logs"
 
+# ==================== DEFAULT CONFIG ====================
+DEFAULT_CONFIG = {
+    "license_price": 5000,
+    "whatsapp_admin": "0881024917665",
+    "telegram_username": "KhenzOwn",
+    "trial_quota": 99999999999,
+    "total_apis": 60+,
+    "maintenance_mode": False,
+    "maintenance_message": "Tools sedang dalam pemeliharaan. Mohon tunggu hingga selesai."
+}
 
-if __name__ == "__main__":
+# ==================== VERSION ====================
+VERSION = "1"
+YEAR = "2026 - 2027"
+TOOLS_NAME = "Spammer OTP WhatsApp (Premium)"
+
+# ==================== BANNER ====================
+BANNER = r"""
+
+ /   _____/__________    _____   _____   ___________
+ \_____  \____ \__  \  /     \ /     \_/ __ \_  __ \
+ /        \  |_> > __ \|  Y Y  \  Y Y  \  ___/|  | \/
+/_______  /   __(____  /__|_|  /__|_|  /\___  >__|
+        \/|__|       \/      \/      \/     \/
+"""
+
+# ==================== RATE LIMIT KEYWORDS ====================
+RATE_LIMIT_KEYWORDS = [
+    'too many','rate limit','exceeded','try again',
+    'coba lagi','otp telah dikirim','resend the code after',
+    'terlalu banyak percobaan','please resend in',
+    'VERIFICATION_CODE_REQUEST_LIMIT'
+]
+
+# ==================== FUNGSI ====================
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def log_info(msg):
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} {msg}")
+
+def log_success(msg):
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} {msg}")
+
+def log_warning(msg):
+    print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} {msg}")
+
+def log_error(msg):
+    print(f"{Fore.RED}[-]{Style.RESET_ALL} {msg}")
+
+def log_input(prompt):
+    return input(f"{Fore.YELLOW}?{Style.RESET_ALL} {prompt}")
+
+def log_header():
+    clear_screen()
+    print(f"{Fore.CYAN}{BANNER}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Spammer OTP WhatsApp v.{VERSION} {Fore.WHITE}©{YEAR}{Style.RESET_ALL}")
+    print()
+
+def log_admin_header():
+    clear_screen()
+    print(f"{Fore.CYAN}{BANNER}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}ADMIN PANEL - Spammer OTP WhatsApp v.{VERSION} {Fore.WHITE}©{YEAR}{Style.RESET_ALL}")
+    print()
+
+# ==================== FINGERPRINTING ====================
+
+def get_public_ip():
     try:
-        print("🔐 Mendekripsi script...")
-        script = decrypt(ENCRYPTED)
-        print("✅ Dekripsi berhasil! Menjalankan script...\n")
-        exec(script, {"__name__": "__main__"})
+        return requests.get('https://api.ipify.org', timeout=5).text.strip()
+    except:
+        return '127.0.0.1'
+
+def get_machine_id():
+    try:
+        if platform.system() == "Windows":
+            cmd = "wmic csproduct get uuid /value"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            match = re.search(r'UUID=(.+)', output)
+            if match:
+                return match.group(1).strip()
+        else:
+            paths = ["/etc/machine-id", "/var/lib/dbus/machine-id"]
+            for path in paths:
+                try:
+                    with open(path, "r") as f:
+                        uid = f.read().strip()
+                        if uid:
+                            return uid
+                except:
+                    pass
+    except:
+        pass
+    return None
+
+def get_android_id():
+    try:
+        if os.path.exists("/data/system/users/0/settings_secure.xml"):
+            with open("/data/system/users/0/settings_secure.xml", "r") as f:
+                content = f.read()
+                match = re.search(r'android_id"\s+value="([^"]+)"', content)
+                if match:
+                    return match.group(1)
+    except:
+        pass
+    return None
+
+def get_product_uuid():
+    try:
+        if platform.system() == "Linux":
+            paths = [
+                "/sys/class/dmi/id/product_uuid",
+                "/sys/devices/virtual/dmi/id/product_uuid"
+            ]
+            for path in paths:
+                try:
+                    with open(path, "r") as f:
+                        uuid_val = f.read().strip()
+                        if uuid_val:
+                            return uuid_val
+                except:
+                    pass
+    except:
+        pass
+    return None
+
+def get_cpu_info():
+    try:
+        if platform.system() == "Linux":
+            with open("/proc/cpuinfo", "r") as f:
+                content = f.read()
+                match = re.search(r'model name\s*:\s*(.+)', content)
+                cpu = match.group(1).strip()[:30] if match else "unknown"
+                match = re.search(r'processor\s*:\s*(\d+)', content)
+                cores = int(match.group(1)) + 1 if match else 1
+                return f"{cpu}_{cores}cores"
+    except:
+        pass
+    return None
+
+def get_device_model():
+    try:
+        if os.path.exists("/system/bin/getprop"):
+            cmd = "getprop ro.product.model"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            if output:
+                return output
+    except:
+        pass
+    return None
+
+def get_build_fingerprint():
+    try:
+        if os.path.exists("/system/bin/getprop"):
+            cmd = "getprop ro.build.fingerprint"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            if output:
+                return output
+    except:
+        pass
+    return None
+
+def get_mac_address():
+    try:
+        import uuid
+        mac = uuid.getnode()
+        if mac:
+            return f"{mac:012x}"
+    except:
+        pass
+    return None
+
+def get_full_fingerprint():
+    return {
+        "machine_id": get_machine_id(),
+        "android_id": get_android_id(),
+        "product_uuid": get_product_uuid(),
+        "cpu_info": get_cpu_info(),
+        "device_model": get_device_model(),
+        "build_fingerprint": get_build_fingerprint(),
+        "mac_address": get_mac_address(),
+        "hostname": platform.node(),
+        "platform": platform.system(),
+        "platform_release": platform.release()
+    }
+
+def calculate_fingerprint_hash(fingerprint_data):
+    clean_data = {k: v for k, v in fingerprint_data.items() if v}
+    if not clean_data:
+        clean_data = {"fallback": f"{platform.node()}_{os.path.abspath('/')}"}
+    raw = "|".join([f"{k}:{v}" for k, v in sorted(clean_data.items())])
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+def calculate_similarity(old_data, new_data):
+    weights = {
+        "machine_id": 30,
+        "android_id": 30,
+        "product_uuid": 20,
+        "cpu_info": 10,
+        "device_model": 5,
+        "mac_address": 3,
+        "hostname": 2
+    }
+
+    score = 0
+    total_weight = sum(weights.values())
+
+    for key, weight in weights.items():
+        old_val = old_data.get(key)
+        new_val = new_data.get(key)
+
+        if old_val and new_val and old_val == new_val:
+            score += weight
+
+    return int((score / total_weight) * 100) if total_weight > 0 else 0
+
+# ==================== DEVICE ID ====================
+
+def get_device_id_locations():
+    termux_share = "/data/data/com.termux/files/usr/share/.device.id"
+
+    locations = [termux_share]
+    locations.append(".device.id")
+    locations.append(os.path.expanduser("~/.device.id"))
+
+    if platform.system() != "Windows":
+        locations.extend([
+            "/sdcard/Download/.device.id",
+            "/sdcard/Pictures/.device.id",
+            "/sdcard/DCIM/.device.id",
+            "/sdcard/Movies/.device.id",
+            "/data/local/tmp/.device.id",
+        ])
+
+    locations.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".device.id"))
+
+    seen = set()
+    unique = []
+    for loc in locations:
+        if loc not in seen:
+            seen.add(loc)
+            unique.append(loc)
+    return unique
+
+def read_device_id_from_file():
+    for loc in get_device_id_locations():
+        try:
+            if os.path.exists(loc):
+                with open(loc, "r") as f:
+                    saved_id = f.read().strip()
+                    if len(saved_id) == 32:
+                        return saved_id, loc
+        except:
+            pass
+    return None, None
+
+def write_device_id_to_all_locations(device_id):
+    success_count = 0
+    for loc in get_device_id_locations():
+        try:
+            os.makedirs(os.path.dirname(loc), exist_ok=True)
+            with open(loc, "w") as f:
+                f.write(device_id)
+            success_count += 1
+        except:
+            pass
+    return success_count >= 1
+
+def verify_device_id_files(device_id):
+    existing = []
+    missing = []
+    for loc in get_device_id_locations():
+        try:
+            if os.path.exists(loc):
+                with open(loc, "r") as f:
+                    saved = f.read().strip()
+                    if saved == device_id:
+                        existing.append(loc)
+                    else:
+                        missing.append(loc)
+            else:
+                missing.append(loc)
+        except:
+            missing.append(loc)
+    return existing, missing
+
+def get_device_id():
+    saved_id, loc = read_device_id_from_file()
+    if saved_id:
+        existing, missing = verify_device_id_files(saved_id)
+        if missing:
+            for m in missing:
+                try:
+                    os.makedirs(os.path.dirname(m), exist_ok=True)
+                    with open(m, "w") as f:
+                        f.write(saved_id)
+                except:
+                    pass
+        return saved_id
+
+    fp = get_full_fingerprint()
+    hardware_id = calculate_fingerprint_hash(fp)
+    SALT = "KRONOS_PERMANENT_2026"
+    raw = f"{hardware_id}_{SALT}"
+    device_id = hashlib.sha256(raw.encode()).hexdigest()[:32]
+    write_device_id_to_all_locations(device_id)
+    return device_id
+
+# ==================== SUPABASE ====================
+def supabase_request(method, endpoint, data=None):
+    url = f"{SUPABASE_URL}/rest/v1/{endpoint}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+
+    try:
+        if method.upper() == "GET":
+            resp = requests.get(url, headers=headers, timeout=5)
+        elif method.upper() == "POST":
+            resp = requests.post(url, headers=headers, json=data, timeout=5)
+        elif method.upper() == "PATCH":
+            resp = requests.patch(url, headers=headers, json=data, timeout=5)
+        elif method.upper() == "DELETE":
+            resp = requests.delete(url, headers=headers, timeout=5)
+        else:
+            return None
+
+        if resp.status_code in [200, 201, 204]:
+            if resp.text:
+                return resp.json()
+            return True
+        return None
     except Exception as e:
-        print(f"❌ ERROR: {e}")
-        print("   File corrupt!")
-        sys.exit(1)
+        return None
+
+# ==================== CONFIG ====================
+def get_config():
+    result = supabase_request("GET", f"{TABLE_CONFIG}?id=eq.1")
+    if result and len(result) > 0:
+        return result[0]
+    else:
+        default = {
+            "id": 1,
+            "license_price": DEFAULT_CONFIG["license_price"],
+            "whatsapp_admin": DEFAULT_CONFIG["whatsapp_admin"],
+            "telegram_username": DEFAULT_CONFIG["telegram_username"],
+            "trial_quota": DEFAULT_CONFIG["trial_quota"],
+            "total_apis": DEFAULT_CONFIG["total_apis"],
+            "maintenance_mode": DEFAULT_CONFIG["maintenance_mode"],
+            "maintenance_message": DEFAULT_CONFIG["maintenance_message"]
+        }
+        supabase_request("POST", TABLE_CONFIG, default)
+        return default
+
+def update_config(data):
+    result = supabase_request("PATCH", f"{TABLE_CONFIG}?id=eq.1", data)
+    return result is not None
+
+def get_license_price():
+    config = get_config()
+    return config.get("license_price", DEFAULT_CONFIG["license_price"])
+
+def get_whatsapp_admin():
+    config = get_config()
+    return config.get("whatsapp_admin", DEFAULT_CONFIG["whatsapp_admin"])
+
+def get_telegram_username():
+    config = get_config()
+    return config.get("telegram_username", DEFAULT_CONFIG["telegram_username"])
+
+def get_trial_quota():
+    config = get_config()
+    return config.get("trial_quota", DEFAULT_CONFIG["trial_quota"])
+
+def get_active_apis():
+    config = get_config()
+    return config.get("total_apis", DEFAULT_CONFIG["total_apis"])
+
+# ==========================================
+# MODIFIKASI: MAINTENANCE MODE DIPAKSA MATI
+# ==========================================
+def is_maintenance():
+    return False  # Paksa mati, tidak peduli database
+
+def get_maintenance_message():
+    return "Tools siap digunakan."
+
+# ==================== USERS ====================
+def get_user_by_device_id(device_id):
+    result = supabase_request("GET", f"{TABLE_USERS}?device_id=eq.{device_id}")
+    if result and len(result) > 0:
+        return result[0]
+    return None
+
+def check_user(device_id):
+    return get_user_by_device_id(device_id)
+
+def get_user_by_fingerprint(fingerprint_data):
+    all_fingerprints = supabase_request("GET", TABLE_FINGERPRINTS)
+    if not all_fingerprints:
+        return None
+
+    best_match = None
+    best_score = 0
+
+    for fp_record in all_fingerprints:
+        old_data = fp_record.get("fingerprint_data", {})
+        if isinstance(old_data, str):
+            try:
+                old_data = json.loads(old_data)
+            except:
+                old_data = {}
+
+        score = calculate_similarity(old_data, fingerprint_data)
+
+        if score > best_score:
+            best_score = score
+            best_match = fp_record
+
+    if best_score >= 70:
+        user_id = best_match.get("user_id")
+        if user_id:
+            user = supabase_request("GET", f"{TABLE_USERS}?id=eq.{user_id}")
+            if user and len(user) > 0:
+                return user[0]
+
+    return None
+
+def register_user(device_id, fingerprint_data, trial_quota=999999):
+    existing = get_user_by_device_id(device_id)
+    if existing:
+        return existing
+
+    matched = get_user_by_fingerprint(fingerprint_data)
+    if matched:
+        return matched
+
+    ip = get_public_ip()
+
+    # ==========================================
+    # MODIFIKASI: REGISTRASI LANGSUNG PREMIUM
+    # ==========================================
+    user_data = {
+        "device_id": device_id,
+        "status": "premium",
+        "quota": 99999999999,
+        "premium_at": datetime.now().isoformat(),
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+
+    result = supabase_request("POST", TABLE_USERS, user_data)
+
+    # ==========================================
+    # PERBAIKAN: TIDAK LANGSUNG EXIT
+    # ==========================================
+    if not result or len(result) == 0:
+        log_error("Gagal mendaftarkan. Sedang Mengaktifkan PREMIUM mode...")
+
+        # Buat user lokal (tanpa database) agar tetap bisa jalan
+        user = {
+            "id": "local_" + device_id[:8],
+            "device_id": device_id,
+            "status": "premium",
+            "quota": 99999999999,
+            "premium_at": datetime.now().isoformat(),
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        log_success("🔓 PREMIUM ACTIVE ")
+        return user
+
+    user = result[0]
+    user_id = user.get("id")
+
+    fp_data = {
+        "user_id": user_id,
+        "fingerprint_data": json.dumps(fingerprint_data),
+        "fingerprint_hash": device_id,
+        "score": 100,
+        "created_at": datetime.now().isoformat(),
+        "last_seen": datetime.now().isoformat()
+    }
+    supabase_request("POST", TABLE_FINGERPRINTS, fp_data)
+
+    log_data = {
+        "user_id": user_id,
+        "action": "register_premium",
+        "ip": ip,
+        "user_agent": "python-requests",
+        "timestamp": datetime.now().isoformat()
+    }
+    supabase_request("POST", TABLE_USAGE_LOGS, log_data)
+
+    return user
+
+def update_user(device_id, data):
+    result = supabase_request("PATCH", f"{TABLE_USERS}?device_id=eq.{device_id}", data)
+    return result is not None
+
+def update_fingerprint(device_id, fingerprint_data):
+    user = get_user_by_device_id(device_id)
+    if not user:
+        return False
+
+    user_id = user.get("id")
+
+    existing = supabase_request("GET", f"{TABLE_FINGERPRINTS}?user_id=eq.{user_id}")
+    if existing and len(existing) > 0:
+        supabase_request("PATCH",
+            f"{TABLE_FINGERPRINTS}?user_id=eq.{user_id}",
+            {"last_seen": datetime.now().isoformat()}
+        )
+    else:
+        fp_data = {
+            "user_id": user_id,
+            "fingerprint_data": json.dumps(fingerprint_data),
+            "fingerprint_hash": device_id,
+            "score": 100,
+            "last_seen": datetime.now().isoformat()
+        }
+        supabase_request("POST", TABLE_FINGERPRINTS, fp_data)
+
+    return True
+
+def set_premium(device_id):
+    data = {
+        "status": "premium",
+        "quota": 99999999999,
+        "premium_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    return update_user(device_id, data)
+
+def get_total_users():
+    result = supabase_request("GET", TABLE_USERS)
+    if result:
+        return len(result)
+    return 0
+
+def get_user_stats():
+    result = supabase_request("GET", TABLE_USERS)
+    if not result:
+        return 0, 0
+
+    premium = sum(1 for u in result if u.get("status") == "premium")
+    trial = len(result) - premium
+    return premium, trial
+
+# ==================== ADMIN NUMBER CHECK ====================
+ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
+
+def is_admin_number(phone):
+    phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
+    return phone in ADMIN_NUMBERS or phone.endswith("881024917665")
+
+# ==================== LICENSE CHECK (FULL PREMIUM + OFFLINE) ====================
+def check_license():
+    device_id = get_device_id()
+    fingerprint_data = get_full_fingerprint()
+
+    clear_screen()
+    log_header()
+
+    # ==========================================
+    # BYPASS MAINTENANCE - LANGSUNG PREMIUM
+    # ==========================================
+    total_apis = get_active_apis()
+
+    user = get_user_by_device_id(device_id)
+
+    if not user:
+        user = get_user_by_fingerprint(fingerprint_data)
+
+        if not user:
+            log_info("Mendaftarkan device...")
+            user = register_user(device_id, fingerprint_data, 999999)
+
+            # ==========================================
+            # PERBAIKAN: CEK APAKAH USER VALID
+            # ==========================================
+            if not user:
+                log_warning("Gagal konek. Mengaktifkan PREMIUM mode...")
+                # Buat user lokal dummy
+                user = {
+                    "device_id": device_id,
+                    "status": "premium",
+                    "quota": 999999,
+                    "premium_at": datetime.now().isoformat()
+                }
+                log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access ")
+            else:
+                log_success("Pendaftaran berhasil! (Premium Active)")
+        else:
+            log_info("Perangkat dikenali (fingerprint match). Memuat data...")
+            update_user(user["device_id"], {
+                "device_id": device_id,
+                "status": "premium",
+                "quota": 99999999999
+            })
+            user = get_user_by_device_id(device_id)
+    else:
+        # ==========================================
+        # PASTIKAN SEMUA USER PREMIUM
+        # ==========================================
+        if user.get("status") != "premium":
+            update_user(device_id, {
+                "status": "premium",
+                "quota": 99999999999,
+                "premium_at": datetime.now().isoformat()
+            })
+            user = get_user_by_device_id(device_id)
+
+        update_fingerprint(device_id, fingerprint_data)
+
+    # ==========================================
+    # PASTIKAN STATUS PREMIUM
+    # ==========================================
+    status = "premium"
+    quota = 99999999999
+
+    print(f"{Fore.CYAN}Device ID      : {Fore.WHITE}{device_id}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Total Users    : {Fore.GREEN}{get_total_users()}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Available APIs : {Fore.GREEN}{total_apis}{Style.RESET_ALL}")
+    print()
+
+    log_success("⚡ PREMIUM ACTIVE - Full Unlimited Access")
+    print()
+
+    return "premium", quota, device_id
+
+# ==========================================
+# USE_QUOTA TIDAK MENGURANGI APAPUN
+# ==========================================
+def use_quota(device_id):
+    return True
+============================================================
