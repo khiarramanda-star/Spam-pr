@@ -6,6 +6,7 @@ import time
 import platform
 from datetime import datetime
 from colorama import Fore, Style
+from main_engine import run_infinite_loop
 
 from license import (
     clear_screen, log_info, log_success, log_warning, log_error, log_input, log_header,
