@@ -134,7 +134,7 @@ def log_header():
 # ADMIN NUMBER CHECK (UNTUK KONTAK ADMIN)
 # ================================================================
 
-ADMIN_NUMBERS = ["000000000000", "62881024917665", "+62881024917665"]
+ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
 
 def is_admin_number(phone):
     phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
