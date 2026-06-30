@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# license.py - Firebase Version (FULL USER SYSTEM)
+# license.py - Firebase Version (ADMIN DEVICE ID)
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import os
@@ -22,6 +22,15 @@ from colorama import Fore, Style
 # ================================================================
 FIREBASE_URL = "https://base-38841-default-rtdb.firebaseio.com"
 FIREBASE_API_KEY = "AIzaSyDLHk9h02tiPAFXy1YKIbMXuHZkRIwGtTo"
+
+# ================================================================
+# ADMIN DEVICE ID LIST (HANYA DEVICE INI YANG PREMIUM)
+# ================================================================
+ADMIN_DEVICES = [
+    "e0c2cc66256510fe2215a3671982910a",  # Device ID admin 1
+    # Tambahin device ID admin lain di sini
+    # Contoh: "abc123def456789..."
+]
 
 # ================================================================
 # FIREBASE FUNCTIONS
@@ -122,7 +131,7 @@ def log_header():
     print()
 
 # ================================================================
-# ADMIN NUMBER CHECK
+# ADMIN NUMBER CHECK (UNTUK KONTAK ADMIN)
 # ================================================================
 
 ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
@@ -380,8 +389,8 @@ def register_user(device_id, fingerprint_data):
     if matched:
         return matched
     
-    # Cek apakah device ini admin
-    is_admin = is_admin_number(get_whatsapp_admin())
+    # CEK APAKAH DEVICE INI ADMIN
+    is_admin = device_id in ADMIN_DEVICES
     
     user_data = {
         "device_id": device_id,
@@ -505,7 +514,7 @@ def get_maintenance_message():
     return config.get("maintenance_message", "Tools siap digunakan.")
 
 # ================================================================
-# LICENSE CHECK (USER SYSTEM)
+# LICENSE CHECK (ADMIN DEVICE ID SYSTEM)
 # ================================================================
 
 def check_license():
@@ -529,13 +538,17 @@ def check_license():
             
             if not user:
                 log_warning("Gagal konek ke server. Menggunakan mode offline...")
+                is_admin = device_id in ADMIN_DEVICES
                 user = {
                     "device_id": device_id,
-                    "status": "trial",
-                    "quota": get_trial_quota(),
+                    "status": "premium" if is_admin else "trial",
+                    "quota": 99999999999 if is_admin else get_trial_quota(),
                     "created_at": datetime.now().isoformat()
                 }
-                log_success("📱 Trial mode aktif (offline)")
+                if is_admin:
+                    log_success("👑 Admin device registered (offline)")
+                else:
+                    log_success("📱 Trial mode aktif (offline)")
             else:
                 status = user.get("status", "trial")
                 if status == "premium":
@@ -560,13 +573,13 @@ def check_license():
         status = user.get("status", "trial")
         quota = user.get("quota", 0)
         
-        # CEK ADMIN
-        if is_admin_number(get_whatsapp_admin()):
+        # CEK ADMIN DEVICE (PAKSA PREMIUM)
+        if device_id in ADMIN_DEVICES:
             status = "premium"
             quota = 99999999999
-            log_success("👑 Admin detected - Premium activated")
+            log_success("👑 Admin device detected - Premium activated")
             
-            # Update ke Firebase kalo admin
+            # Update ke Firebase
             if user.get("_key") and not user.get("_key", "").startswith("local_"):
                 set_premium(device_id)
         
@@ -639,5 +652,5 @@ def get_login_handlers():
 # ================================================================
 
 if __name__ == "__main__":
-    print("🔐 License module loaded")
+    print("🔐 License module loaded (Firebase Version)")
     check_license()
