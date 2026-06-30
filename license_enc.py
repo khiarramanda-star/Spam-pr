@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# license.py - Firebase Version (FULL INTEGRATION)
+# "I just give the tools, whether they're used right or not is your business, boss."
+
 import os
 import sys
 import hashlib
@@ -12,29 +16,70 @@ import string
 from datetime import datetime
 from colorama import Fore, Style
 
-# ==================== TABLES ====================
-TABLE_USERS = "users"
-TABLE_CONFIG = "config"
-TABLE_FINGERPRINTS = "fingerprints"
-TABLE_USAGE_LOGS = "usage_logs"
+# ================================================================
+# FIREBASE CONFIG
+# ================================================================
+FIREBASE_URL = "https://base-38841-default-rtdb.firebaseio.com"
+FIREBASE_API_KEY = "AIzaSyDLHk9h02tiPAFXy1YKIbMXuHZkRIwGtTo"
 
-# ==================== DEFAULT CONFIG ====================
-DEFAULT_CONFIG = {
-    "license_price": 5000,
-    "whatsapp_admin": "0881024917665",
-    "telegram_username": "KhenzOwn",
-    "trial_quota": 99999999999,
-    "total_apis": 60,
-    "maintenance_mode": False,
-    "maintenance_message": "Tools sedang dalam pemeliharaan. Mohon tunggu hingga selesai."
-}
+# ================================================================
+# FIREBASE FUNCTIONS
+# ================================================================
 
-# ==================== VERSION ====================
+def firebase_get(path):
+    """GET data dari Firebase"""
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except:
+        return None
+
+def firebase_post(path, data):
+    """POST data ke Firebase"""
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.post(url, json=data, timeout=10)
+        if resp.status_code in [200, 201]:
+            return resp.json()
+        return None
+    except:
+        return None
+
+def firebase_patch(path, data):
+    """PATCH/UPDATE data di Firebase"""
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.patch(url, json=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except:
+        return None
+
+def firebase_put(path, data):
+    """PUT data ke Firebase (create/replace)"""
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.put(url, json=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except:
+        return None
+
+# ================================================================
+# CONSTANTS
+# ================================================================
 VERSION = "1"
 YEAR = "2026 - 2027"
 TOOLS_NAME = "Spammer OTP WhatsApp (Premium)"
 
-# ==================== BANNER ====================
+# ================================================================
+# BANNER
+# ================================================================
 BANNER = r"""
 
  /   _____/__________    _____   _____   ___________
@@ -44,7 +89,9 @@ BANNER = r"""
         \/|__|       \/      \/      \/     \/
 """
 
-# ==================== RATE LIMIT KEYWORDS ====================
+# ================================================================
+# RATE LIMIT KEYWORDS
+# ================================================================
 RATE_LIMIT_KEYWORDS = [
     'too many','rate limit','exceeded','try again',
     'coba lagi','otp telah dikirim','resend the code after',
@@ -52,7 +99,9 @@ RATE_LIMIT_KEYWORDS = [
     'VERIFICATION_CODE_REQUEST_LIMIT'
 ]
 
-# ==================== FUNGSI ====================
+# ================================================================
+# FUNGSI LOGGING
+# ================================================================
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -68,22 +117,15 @@ def log_warning(msg):
 def log_error(msg):
     print(f"{Fore.RED}[-]{Style.RESET_ALL} {msg}")
 
-def log_input(prompt):
-    return input(f"{Fore.YELLOW}?{Style.RESET_ALL} {prompt}")
-
 def log_header():
     clear_screen()
     print(f"{Fore.CYAN}{BANNER}{Style.RESET_ALL}")
     print(f"{Fore.CYAN}Spammer OTP WhatsApp v.{VERSION} {Fore.WHITE}©{YEAR}{Style.RESET_ALL}")
     print()
 
-def log_admin_header():
-    clear_screen()
-    print(f"{Fore.CYAN}{BANNER}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}ADMIN PANEL - Spammer OTP WhatsApp v.{VERSION} {Fore.WHITE}©{YEAR}{Style.RESET_ALL}")
-    print()
-
-# ==================== FINGERPRINTING ====================
+# ================================================================
+# FINGERPRINTING
+# ================================================================
 
 def get_public_ip():
     try:
@@ -221,28 +263,24 @@ def calculate_similarity(old_data, new_data):
         "mac_address": 3,
         "hostname": 2
     }
-
     score = 0
     total_weight = sum(weights.values())
-
     for key, weight in weights.items():
         old_val = old_data.get(key)
         new_val = new_data.get(key)
-
         if old_val and new_val and old_val == new_val:
             score += weight
-
     return int((score / total_weight) * 100) if total_weight > 0 else 0
 
-# ==================== DEVICE ID ====================
+# ================================================================
+# DEVICE ID
+# ================================================================
 
 def get_device_id_locations():
     termux_share = "/data/data/com.termux/files/usr/share/.device.id"
-
     locations = [termux_share]
     locations.append(".device.id")
     locations.append(os.path.expanduser("~/.device.id"))
-
     if platform.system() != "Windows":
         locations.extend([
             "/sdcard/Download/.device.id",
@@ -251,16 +289,8 @@ def get_device_id_locations():
             "/sdcard/Movies/.device.id",
             "/data/local/tmp/.device.id",
         ])
-
     locations.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".device.id"))
-
-    seen = set()
-    unique = []
-    for loc in locations:
-        if loc not in seen:
-            seen.add(loc)
-            unique.append(loc)
-    return unique
+    return list(dict.fromkeys(locations))
 
 def read_device_id_from_file():
     for loc in get_device_id_locations():
@@ -286,62 +316,139 @@ def write_device_id_to_all_locations(device_id):
             pass
     return success_count >= 1
 
-def verify_device_id_files(device_id):
-    existing = []
-    missing = []
-    for loc in get_device_id_locations():
-        try:
-            if os.path.exists(loc):
-                with open(loc, "r") as f:
-                    saved = f.read().strip()
-                    if saved == device_id:
-                        existing.append(loc)
-                    else:
-                        missing.append(loc)
-            else:
-                missing.append(loc)
-        except:
-            missing.append(loc)
-    return existing, missing
-
 def get_device_id():
     saved_id, loc = read_device_id_from_file()
     if saved_id:
-        existing, missing = verify_device_id_files(saved_id)
-        if missing:
-            for m in missing:
-                try:
-                    os.makedirs(os.path.dirname(m), exist_ok=True)
-                    with open(m, "w") as f:
-                        f.write(saved_id)
-                except:
-                    pass
         return saved_id
-
     fp = get_full_fingerprint()
     hardware_id = calculate_fingerprint_hash(fp)
+    write_device_id_to_all_locations(hardware_id)
+    return hardware_id
 
-# ==================== CONFIG ====================
-def get_config():
-    result = supabase_request("GET", f"{TABLE_CONFIG}?id=eq.1")
-    if result and len(result) > 0:
-        return result[0]
+# ================================================================
+# FIREBASE USER FUNCTIONS
+# ================================================================
+
+def get_user_by_device_id(device_id):
+    """Cari user berdasarkan device_id di Firebase"""
+    data = firebase_get("users")
+    if not data:
+        return None
+    for key, user in data.items():
+        if user.get("device_id") == device_id:
+            user["_key"] = key
+            return user
+    return None
+
+def get_user_by_fingerprint(fingerprint_data):
+    """Cari user berdasarkan fingerprint match"""
+    data = firebase_get("users")
+    if not data:
+        return None
+    best_match = None
+    best_score = 0
+    for key, user in data.items():
+        old_fp = user.get("fingerprint_data", {})
+        if isinstance(old_fp, str):
+            try:
+                old_fp = json.loads(old_fp)
+            except:
+                old_fp = {}
+        score = calculate_similarity(old_fp, fingerprint_data)
+        if score > best_score:
+            best_score = score
+            best_match = user
+            best_match["_key"] = key
+    if best_score >= 70:
+        return best_match
+    return None
+
+def register_user(device_id, fingerprint_data, trial_quota=999999):
+    """Register user baru ke Firebase"""
+    existing = get_user_by_device_id(device_id)
+    if existing:
+        return existing
+    
+    matched = get_user_by_fingerprint(fingerprint_data)
+    if matched:
+        return matched
+    
+    ip = get_public_ip()
+    
+    user_data = {
+        "device_id": device_id,
+        "status": "premium",
+        "quota": 99999999999,
+        "fingerprint_data": fingerprint_data,
+        "fingerprint_hash": device_id,
+        "created_at": datetime.now().isoformat(),
+        "premium_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    
+    result = firebase_post("users", user_data)
+    
+    if result:
+        user_data["_key"] = result.get("name")
+        log_success("Pendaftaran berhasil! (Premium Active)")
+        return user_data
     else:
-        default = {
-            "id": 1,
-            "license_price": DEFAULT_CONFIG["license_price"],
-            "whatsapp_admin": DEFAULT_CONFIG["whatsapp_admin"],
-            "telegram_username": DEFAULT_CONFIG["telegram_username"],
-            "trial_quota": DEFAULT_CONFIG["trial_quota"],
-            "total_apis": DEFAULT_CONFIG["total_apis"],
-            "maintenance_mode": DEFAULT_CONFIG["maintenance_mode"],
-            "maintenance_message": DEFAULT_CONFIG["maintenance_message"]
-        }
-        supabase_request("POST", TABLE_CONFIG, default)
-        return default
+        log_error("Gagal mendaftarkan. Mengaktifkan PREMIUM mode lokal...")
+        user_data["_key"] = "local_" + device_id[:8]
+        log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access")
+        return user_data
+
+def update_user(device_id, data):
+    """Update user di Firebase"""
+    user = get_user_by_device_id(device_id)
+    if not user:
+        return False
+    key = user.get("_key")
+    if not key or key.startswith("local_"):
+        return False
+    result = firebase_patch(f"users/{key}", data)
+    return result is not None
+
+def get_total_users():
+    """Total user di Firebase"""
+    data = firebase_get("users")
+    return len(data) if data else 0
+
+def get_user_stats():
+    """Statistik user"""
+    data = firebase_get("users")
+    if not data:
+        return 0, 0
+    premium = sum(1 for u in data.values() if u.get("status") == "premium")
+    trial = len(data) - premium
+    return premium, trial
+
+# ================================================================
+# CONFIG FUNCTIONS
+# ================================================================
+
+DEFAULT_CONFIG = {
+    "license_price": 5000,
+    "whatsapp_admin": "0881024917665",
+    "telegram_username": "KhenzOwn",
+    "trial_quota": 99999999999,
+    "total_apis": 60,
+    "maintenance_mode": False,
+    "maintenance_message": "Tools siap digunakan."
+}
+
+def get_config():
+    """Ambil config dari Firebase"""
+    config = firebase_get("config")
+    if config:
+        return config
+    # Buat default
+    firebase_put("config", DEFAULT_CONFIG)
+    return DEFAULT_CONFIG
 
 def update_config(data):
-    result = supabase_request("PATCH", f"{TABLE_CONFIG}?id=eq.1", data)
+    """Update config di Firebase"""
+    result = firebase_patch("config", data)
     return result is not None
 
 def get_license_price():
@@ -364,262 +471,114 @@ def get_active_apis():
     config = get_config()
     return config.get("total_apis", DEFAULT_CONFIG["total_apis"])
 
-# ==========================================
-# MODIFIKASI: MAINTENANCE MODE DIPAKSA MATI
-# ==========================================
 def is_maintenance():
-    return False  # Paksa mati, tidak peduli database
+    """Cek maintenance mode (selalu false)"""
+    return False
 
 def get_maintenance_message():
-    return "Tools siap digunakan."
+    config = get_config()
+    return config.get("maintenance_message", "Tools siap digunakan.")
 
-# ==================== USERS ====================
-def get_user_by_device_id(device_id):
-    result = supabase_request("GET", f"{TABLE_USERS}?device_id=eq.{device_id}")
-    if result and len(result) > 0:
-        return result[0]
-    return None
-
-def check_user(device_id):
-    return get_user_by_device_id(device_id)
-
-def get_user_by_fingerprint(fingerprint_data):
-    all_fingerprints = supabase_request("GET", TABLE_FINGERPRINTS)
-    if not all_fingerprints:
-        return None
-
-    best_match = None
-    best_score = 0
-
-    for fp_record in all_fingerprints:
-        old_data = fp_record.get("fingerprint_data", {})
-        if isinstance(old_data, str):
-            try:
-                old_data = json.loads(old_data)
-            except:
-                old_data = {}
-
-        score = calculate_similarity(old_data, fingerprint_data)
-
-        if score > best_score:
-            best_score = score
-            best_match = fp_record
-
-    if best_score >= 70:
-        user_id = best_match.get("user_id")
-        if user_id:
-            user = supabase_request("GET", f"{TABLE_USERS}?id=eq.{user_id}")
-            if user and len(user) > 0:
-                return user[0]
-
-    return None
-
-def register_user(device_id, fingerprint_data, trial_quota=999999):
-    existing = get_user_by_device_id(device_id)
-    if existing:
-        return existing
-
-    matched = get_user_by_fingerprint(fingerprint_data)
-    if matched:
-        return matched
-
-    ip = get_public_ip()
-
-    # ==========================================
-    # MODIFIKASI: REGISTRASI LANGSUNG PREMIUM
-    # ==========================================
-    user_data = {
-        "device_id": device_id,
-        "status": "premium",
-        "quota": 99999999999,
-        "premium_at": datetime.now().isoformat(),
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
-
-    result = supabase_request("POST", TABLE_USERS, user_data)
-
-    # ==========================================
-    # PERBAIKAN: TIDAK LANGSUNG EXIT
-    # ==========================================
-    if not result or len(result) == 0:
-        log_error("Gagal mendaftarkan. Sedang Mengaktifkan PREMIUM mode...")
-
-        # Buat user lokal (tanpa database) agar tetap bisa jalan
-        user = {
-            "id": "local_" + device_id[:8],
-            "device_id": device_id,
-            "status": "premium",
-            "quota": 99999999999,
-            "premium_at": datetime.now().isoformat(),
-            "created_at": datetime.now().isoformat(),
-            "updated_at": datetime.now().isoformat()
-        }
-        log_success("🔓 PREMIUM ACTIVE ")
-        return user
-
-    user = result[0]
-    user_id = user.get("id")
-
-    fp_data = {
-        "user_id": user_id,
-        "fingerprint_data": json.dumps(fingerprint_data),
-        "fingerprint_hash": device_id,
-        "score": 100,
-        "created_at": datetime.now().isoformat(),
-        "last_seen": datetime.now().isoformat()
-    }
-    supabase_request("POST", TABLE_FINGERPRINTS, fp_data)
-
-    log_data = {
-        "user_id": user_id,
-        "action": "register_premium",
-        "ip": ip,
-        "user_agent": "python-requests",
-        "timestamp": datetime.now().isoformat()
-    }
-    supabase_request("POST", TABLE_USAGE_LOGS, log_data)
-
-    return user
-
-def update_user(device_id, data):
-    result = supabase_request("PATCH", f"{TABLE_USERS}?device_id=eq.{device_id}", data)
-    return result is not None
-
-def update_fingerprint(device_id, fingerprint_data):
-    user = get_user_by_device_id(device_id)
-    if not user:
-        return False
-
-    user_id = user.get("id")
-
-    existing = supabase_request("GET", f"{TABLE_FINGERPRINTS}?user_id=eq.{user_id}")
-    if existing and len(existing) > 0:
-        supabase_request("PATCH",
-            f"{TABLE_FINGERPRINTS}?user_id=eq.{user_id}",
-            {"last_seen": datetime.now().isoformat()}
-        )
-    else:
-        fp_data = {
-            "user_id": user_id,
-            "fingerprint_data": json.dumps(fingerprint_data),
-            "fingerprint_hash": device_id,
-            "score": 100,
-            "last_seen": datetime.now().isoformat()
-        }
-        supabase_request("POST", TABLE_FINGERPRINTS, fp_data)
-
-    return True
-
-def set_premium(device_id):
-    data = {
-        "status": "premium",
-        "quota": 99999999999,
-        "premium_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
-    return update_user(device_id, data)
-
-def get_total_users():
-    result = supabase_request("GET", TABLE_USERS)
-    if result:
-        return len(result)
-    return 0
-
-def get_user_stats():
-    result = supabase_request("GET", TABLE_USERS)
-    if not result:
-        return 0, 0
-
-    premium = sum(1 for u in result if u.get("status") == "premium")
-    trial = len(result) - premium
-    return premium, trial
-
-# ==================== ADMIN NUMBER CHECK ====================
+# ================================================================
+# ADMIN NUMBER CHECK
+# ================================================================
 ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
 
 def is_admin_number(phone):
     phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
     return phone in ADMIN_NUMBERS or phone.endswith("881024917665")
 
-# ==================== LICENSE CHECK (FULL PREMIUM + OFFLINE) ====================
+# ================================================================
+# LICENSE CHECK
+# ================================================================
+
 def check_license():
+    """Check license dan return status, quota, device_id"""
     device_id = get_device_id()
     fingerprint_data = get_full_fingerprint()
-
+    
     clear_screen()
     log_header()
-
-    # ==========================================
-    # BYPASS MAINTENANCE - LANGSUNG PREMIUM
-    # ==========================================
+    
     total_apis = get_active_apis()
-
     user = get_user_by_device_id(device_id)
-
+    
     if not user:
         user = get_user_by_fingerprint(fingerprint_data)
-
         if not user:
             log_info("Mendaftarkan device...")
             user = register_user(device_id, fingerprint_data, 999999)
-
-            # ==========================================
-            # PERBAIKAN: CEK APAKAH USER VALID
-            # ==========================================
-            if not user:
-                log_warning("Gagal konek. Mengaktifkan PREMIUM mode...")
-                # Buat user lokal dummy
-                user = {
-                    "device_id": device_id,
-                    "status": "premium",
-                    "quota": 999999,
-                    "premium_at": datetime.now().isoformat()
-                }
-                log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access ")
-            else:
-                log_success("Pendaftaran berhasil! (Premium Active)")
-        else:
-            log_info("Perangkat dikenali (fingerprint match). Memuat data...")
-            update_user(user["device_id"], {
-                "device_id": device_id,
-                "status": "premium",
-                "quota": 99999999999
-            })
-            user = get_user_by_device_id(device_id)
-    else:
-        # ==========================================
-        # PASTIKAN SEMUA USER PREMIUM
-        # ==========================================
-        if user.get("status") != "premium":
-            update_user(device_id, {
-                "status": "premium",
-                "quota": 99999999999,
-                "premium_at": datetime.now().isoformat()
-            })
-            user = get_user_by_device_id(device_id)
-
-        update_fingerprint(device_id, fingerprint_data)
-
-    # ==========================================
-    # PASTIKAN STATUS PREMIUM
-    # ==========================================
+    
+    if not user:
+        log_warning("Gagal konek. Mengaktifkan PREMIUM mode...")
+        user = {
+            "device_id": device_id,
+            "status": "premium",
+            "quota": 999999,
+            "premium_at": datetime.now().isoformat()
+        }
+        log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access")
+    
+    # Update fingerprint
+    if user and not user.get("_key", "").startswith("local_"):
+        update_user(device_id, {
+            "fingerprint_data": fingerprint_data,
+            "last_seen": datetime.now().isoformat()
+        })
+    
     status = "premium"
     quota = 99999999999
-
+    
     print(f"{Fore.CYAN}Device ID      : {Fore.WHITE}{device_id}{Style.RESET_ALL}")
     print(f"{Fore.CYAN}Total Users    : {Fore.GREEN}{get_total_users()}{Style.RESET_ALL}")
     print(f"{Fore.CYAN}Available APIs : {Fore.GREEN}{total_apis}{Style.RESET_ALL}")
     print()
-
     log_success("⚡ PREMIUM ACTIVE - Full Unlimited Access")
     print()
-
+    
     return "premium", quota, device_id
 
-# ==========================================
-# USE_QUOTA TIDAK MENGURANGI APAPUN
-# ==========================================
 def use_quota(device_id):
+    """Pakai quota (tidak mengurangi apapun untuk premium)"""
     return True
-============================================================
+
+# ================================================================
+# FUNGSI YANG DIPANGGIL MAIN_ENGINE
+# ================================================================
+
+def get_all_handlers():
+    """Ambil semua handler dari handlers.py"""
+    try:
+        from handlers import get_all_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_working_handlers():
+    try:
+        from handlers import get_working_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_register_handlers():
+    try:
+        from handlers import get_register_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_login_handlers():
+    try:
+        from handlers import get_login_handlers as real
+        return real()
+    except:
+        return {}
+
+# ================================================================
+# MAIN
+# ================================================================
+
+if __name__ == "__main__":
+    print("🔐 License module loaded (Firebase Version)")
+    check_license()
