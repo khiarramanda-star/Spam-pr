@@ -3031,7 +3031,7 @@ def send_amazon_mx_otp(phone):
     except:
         return False, None, ''
 
-def send_uber_otp(phone):
+def send_uber_ca_otp(phone):
     """Uber OTP - multiple endpoint fallback"""
     try:
         phone_plus = fmt_plus(phone)
