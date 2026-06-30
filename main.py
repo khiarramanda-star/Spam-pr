@@ -11,6 +11,8 @@ from colorama import Fore, Style, init
 
 init(autoreset=True)
 
+from utils import fmt_08
+
 from license import (
     clear_screen, log_info, log_success, log_warning, log_error, log_input,
     check_license, use_quota, get_device_id, check_user,
@@ -77,6 +79,8 @@ def show_menu(status, quota, device_id):
         print(f"{Fore.GREEN}[5]{Style.RESET_ALL} {Fore.YELLOW}Spam SMS{Style.RESET_ALL}")
         print(f"{Fore.GREEN}[6]{Style.RESET_ALL} {Fore.YELLOW}Spam WhatsApp{Style.RESET_ALL}")
         print()
+        print(f"{Fore.GREEN}[0]{Style.RESET_ALL} {Fore.RED}Spam All{Style.RESET_ALL} {Fore.WHITE}(OTP + Call + SMS + WA){Style.RESET_ALL}")
+        print()
     
     print(f"{Fore.CYAN}LAINNYA{Style.RESET_ALL}")
     if status != "premium":
@@ -106,6 +110,74 @@ def show_thread_menu():
     return log_input("Pilih (1-10, Enter=5): ").strip() or "5"
 
 # ================================================================
+# SPAM ALL (OTP + CALL + SMS + WA)
+# ================================================================
+
+def spam_all(phone):
+    """Jalankan SEMUA spam (OTP + Call + SMS + WhatsApp)"""
+    print()
+    log_info(f"Menjalankan SPAM ALL ke {phone}...")
+    print()
+    
+    # 1. OTP Spam (Single Round)
+    log_info("1. Menjalankan OTP Spam...")
+    try:
+        from main_engine import run_single_round
+        run_single_round(threads=5)
+    except Exception as e:
+        log_error(f"OTP Spam error: {e}")
+    
+    print()
+    
+    # 2. Spam Call
+    log_info("2. Menjalankan Spam Call...")
+    try:
+        from handlers import send_spam_call_free
+        resp = send_spam_call_free(phone)
+        if resp and resp.status_code == 200:
+            log_success("Call sent!")
+        else:
+            log_error("Call failed")
+    except Exception as e:
+        log_error(f"Call error: {e}")
+    
+    print()
+    
+    # 3. Spam SMS
+    log_info("3. Menjalankan Spam SMS...")
+    try:
+        from handlers import send_spam_sms_free, send_spam_sms_callmebot_free
+        resp = send_spam_sms_free(phone)
+        if resp and resp.status_code == 200:
+            log_success("SMS sent via TextBelt")
+        else:
+            log_warning("TextBelt failed")
+        resp2 = send_spam_sms_callmebot_free(phone)
+        if resp2 and resp2.status_code == 200:
+            log_success("SMS sent via CallMeBot")
+        else:
+            log_warning("CallMeBot failed")
+    except Exception as e:
+        log_error(f"SMS error: {e}")
+    
+    print()
+    
+    # 4. Spam WhatsApp
+    log_info("4. Menjalankan Spam WhatsApp...")
+    try:
+        from handlers import send_spam_whatsapp_free
+        resp = send_spam_whatsapp_free(phone)
+        if resp and resp.status_code == 200:
+            log_success("WhatsApp link opened!")
+        else:
+            log_error("WhatsApp failed")
+    except Exception as e:
+        log_error(f"WhatsApp error: {e}")
+    
+    print()
+    log_success("SPAM ALL SELESAI!")
+
+# ================================================================
 # SPAM CALL/SMS (PREMIUM)
 # ================================================================
 
@@ -117,7 +189,7 @@ def spam_call_number(phone):
         if resp and resp.status_code == 200:
             log_success("Call sent!")
         else:
-            log_error(f"Call failed")
+            log_error("Call failed")
     except Exception as e:
         log_error(f"Error: {e}")
 
@@ -165,7 +237,20 @@ def main():
         show_menu(status, quota, device_id)
         choice = log_input("Pilih menu: ").strip()
         
-        if choice == "1":
+        # ========================================
+        # SPAM ALL (PREMIUM ONLY)
+        # ========================================
+        if choice == "0" and status == "premium":
+            phone = log_input("Nomor target (08xx): ").strip()
+            if phone:
+                phone = fmt_08(phone)
+                spam_all(phone)
+            input("\nTekan Enter untuk kembali...")
+        
+        # ========================================
+        # MENU 1: SINGLE ROUND
+        # ========================================
+        elif choice == "1":
             if status == "trial" and quota <= 0:
                 log_warning("Kuota trial habis!")
                 input("Tekan Enter...")
@@ -187,6 +272,9 @@ def main():
             
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU 2: INFINITE LOOP
+        # ========================================
         elif choice == "2":
             if status == "trial" and quota <= 0:
                 log_warning("Kuota trial habis!")
@@ -201,6 +289,9 @@ def main():
             run_infinite_loop()
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU 3: CUSTOM THREAD
+        # ========================================
         elif choice == "3":
             if status == "trial" and quota <= 0:
                 log_warning("Kuota trial habis!")
@@ -228,6 +319,9 @@ def main():
             
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU 4: SPAM CALL (PREMIUM ONLY)
+        # ========================================
         elif choice == "4" and status == "premium":
             phone = log_input("Nomor target (08xx): ").strip()
             if phone:
@@ -235,6 +329,9 @@ def main():
                 spam_call_number(phone)
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU 5: SPAM SMS (PREMIUM ONLY)
+        # ========================================
         elif choice == "5" and status == "premium":
             phone = log_input("Nomor target (08xx): ").strip()
             if phone:
@@ -242,6 +339,9 @@ def main():
                 spam_sms_number(phone)
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU 6: SPAM WHATSAPP (PREMIUM ONLY)
+        # ========================================
         elif choice == "6" and status == "premium":
             phone = log_input("Nomor target (08xx): ").strip()
             if phone:
@@ -249,15 +349,24 @@ def main():
                 spam_whatsapp_number(phone)
             input("\nTekan Enter untuk kembali...")
         
+        # ========================================
+        # MENU BELI PREMIUM (TRIAL USER)
+        # ========================================
         elif choice == "4" and status != "premium":
             show_buy_guide()
             user = check_user(device_id)
             if user:
                 quota = user.get("quota", 0)
         
+        # ========================================
+        # MENU BELI PREMIUM (PREMIUM USER - INFO)
+        # ========================================
         elif choice == "7" and status == "premium":
             show_buy_guide()
         
+        # ========================================
+        # MENU KELUAR
+        # ========================================
         elif (choice == "5" and status != "premium") or (choice == "8" and status == "premium"):
             print(f"\n{Fore.GREEN}Terima kasih!{Style.RESET_ALL}")
             sys.exit(0)
