@@ -395,7 +395,7 @@ def register_user(device_id, fingerprint_data):
     user_data = {
         "device_id": device_id,
         "status": "premium" if is_admin else "trial",
-        "quota": 99999999999 if is_admin else get_trial_quota(),
+        "quota": infinity if is_admin else get_trial_quota(),
         "fingerprint_data": fingerprint_data,
         "fingerprint_hash": device_id,
         "created_at": datetime.now().isoformat(),
@@ -422,7 +422,7 @@ def update_user(device_id, data):
 def set_premium(device_id):
     data = {
         "status": "premium",
-        "quota": 99999999999,
+        "quota": 9999999999999,
         "premium_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat()
     }
@@ -542,7 +542,7 @@ def check_license():
                 user = {
                     "device_id": device_id,
                     "status": "premium" if is_admin else "trial",
-                    "quota": 99999999999 if is_admin else get_trial_quota(),
+                    "quota": infinity if is_admin else get_trial_quota(),
                     "created_at": datetime.now().isoformat()
                 }
                 if is_admin:
@@ -576,7 +576,7 @@ def check_license():
         # CEK ADMIN DEVICE (PAKSA PREMIUM)
         if device_id in ADMIN_DEVICES:
             status = "premium"
-            quota = 99999999999
+            quota = infinity 
             log_success("👑 Admin device detected - Premium activated")
             
             # Update ke Firebase
