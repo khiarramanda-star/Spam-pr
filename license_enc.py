@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# license.py - Firebase Version (FULL INTEGRATION)
+# license.py - Firebase Version (FULL)
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import os
@@ -13,6 +13,7 @@ import json
 import time
 import random
 import string
+import uuid
 from datetime import datetime
 from colorama import Fore, Style
 
@@ -27,7 +28,6 @@ FIREBASE_API_KEY = "AIzaSyDLHk9h02tiPAFXy1YKIbMXuHZkRIwGtTo"
 # ================================================================
 
 def firebase_get(path):
-    """GET data dari Firebase"""
     url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
     try:
         resp = requests.get(url, timeout=10)
@@ -38,7 +38,6 @@ def firebase_get(path):
         return None
 
 def firebase_post(path, data):
-    """POST data ke Firebase"""
     url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
     try:
         resp = requests.post(url, json=data, timeout=10)
@@ -49,7 +48,6 @@ def firebase_post(path, data):
         return None
 
 def firebase_patch(path, data):
-    """PATCH/UPDATE data di Firebase"""
     url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
     try:
         resp = requests.patch(url, json=data, timeout=10)
@@ -60,7 +58,6 @@ def firebase_patch(path, data):
         return None
 
 def firebase_put(path, data):
-    """PUT data ke Firebase (create/replace)"""
     url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
     try:
         resp = requests.put(url, json=data, timeout=10)
@@ -73,13 +70,10 @@ def firebase_put(path, data):
 # ================================================================
 # CONSTANTS
 # ================================================================
-VERSION = "1"
+VERSION = "3.1.1"
 YEAR = "2026 - 2027"
 TOOLS_NAME = "Spammer OTP WhatsApp (Premium)"
 
-# ================================================================
-# BANNER
-# ================================================================
 BANNER = r"""
 
  /   _____/__________    _____   _____   ___________
@@ -100,8 +94,9 @@ RATE_LIMIT_KEYWORDS = [
 ]
 
 # ================================================================
-# FUNGSI LOGGING
+# FUNGSI LOGGING (DIPAKAI MAIN.PY)
 # ================================================================
+
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -116,6 +111,9 @@ def log_warning(msg):
 
 def log_error(msg):
     print(f"{Fore.RED}[-]{Style.RESET_ALL} {msg}")
+
+def log_input(prompt):
+    return input(f"{Fore.YELLOW}?{Style.RESET_ALL} {prompt}")
 
 def log_header():
     clear_screen()
@@ -224,7 +222,6 @@ def get_build_fingerprint():
 
 def get_mac_address():
     try:
-        import uuid
         mac = uuid.getnode()
         if mac:
             return f"{mac:012x}"
@@ -330,7 +327,6 @@ def get_device_id():
 # ================================================================
 
 def get_user_by_device_id(device_id):
-    """Cari user berdasarkan device_id di Firebase"""
     data = firebase_get("users")
     if not data:
         return None
@@ -340,8 +336,10 @@ def get_user_by_device_id(device_id):
             return user
     return None
 
+def check_user(device_id):
+    return get_user_by_device_id(device_id)
+
 def get_user_by_fingerprint(fingerprint_data):
-    """Cari user berdasarkan fingerprint match"""
     data = firebase_get("users")
     if not data:
         return None
@@ -364,16 +362,12 @@ def get_user_by_fingerprint(fingerprint_data):
     return None
 
 def register_user(device_id, fingerprint_data, trial_quota=999999):
-    """Register user baru ke Firebase"""
     existing = get_user_by_device_id(device_id)
     if existing:
         return existing
-    
     matched = get_user_by_fingerprint(fingerprint_data)
     if matched:
         return matched
-    
-    ip = get_public_ip()
     
     user_data = {
         "device_id": device_id,
@@ -385,21 +379,13 @@ def register_user(device_id, fingerprint_data, trial_quota=999999):
         "premium_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat()
     }
-    
     result = firebase_post("users", user_data)
-    
     if result:
         user_data["_key"] = result.get("name")
-        log_success("Pendaftaran berhasil! (Premium Active)")
         return user_data
-    else:
-        log_error("Gagal mendaftarkan. Mengaktifkan PREMIUM mode lokal...")
-        user_data["_key"] = "local_" + device_id[:8]
-        log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access")
-        return user_data
+    return None
 
 def update_user(device_id, data):
-    """Update user di Firebase"""
     user = get_user_by_device_id(device_id)
     if not user:
         return False
@@ -409,13 +395,20 @@ def update_user(device_id, data):
     result = firebase_patch(f"users/{key}", data)
     return result is not None
 
+def set_premium(device_id):
+    data = {
+        "status": "premium",
+        "quota": 99999999999,
+        "premium_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    return update_user(device_id, data)
+
 def get_total_users():
-    """Total user di Firebase"""
     data = firebase_get("users")
     return len(data) if data else 0
 
 def get_user_stats():
-    """Statistik user"""
     data = firebase_get("users")
     if not data:
         return 0, 0
@@ -438,16 +431,13 @@ DEFAULT_CONFIG = {
 }
 
 def get_config():
-    """Ambil config dari Firebase"""
     config = firebase_get("config")
     if config:
         return config
-    # Buat default
     firebase_put("config", DEFAULT_CONFIG)
     return DEFAULT_CONFIG
 
 def update_config(data):
-    """Update config di Firebase"""
     result = firebase_patch("config", data)
     return result is not None
 
@@ -472,7 +462,6 @@ def get_active_apis():
     return config.get("total_apis", DEFAULT_CONFIG["total_apis"])
 
 def is_maintenance():
-    """Cek maintenance mode (selalu false)"""
     return False
 
 def get_maintenance_message():
@@ -480,20 +469,10 @@ def get_maintenance_message():
     return config.get("maintenance_message", "Tools siap digunakan.")
 
 # ================================================================
-# ADMIN NUMBER CHECK
-# ================================================================
-ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
-
-def is_admin_number(phone):
-    phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
-    return phone in ADMIN_NUMBERS or phone.endswith("881024917665")
-
-# ================================================================
 # LICENSE CHECK
 # ================================================================
 
 def check_license():
-    """Check license dan return status, quota, device_id"""
     device_id = get_device_id()
     fingerprint_data = get_full_fingerprint()
     
@@ -519,7 +498,6 @@ def check_license():
         }
         log_success("🔓 PREMIUM ACTIVE - Full Unlimited Access")
     
-    # Update fingerprint
     if user and not user.get("_key", "").startswith("local_"):
         update_user(device_id, {
             "fingerprint_data": fingerprint_data,
@@ -539,15 +517,13 @@ def check_license():
     return "premium", quota, device_id
 
 def use_quota(device_id):
-    """Pakai quota (tidak mengurangi apapun untuk premium)"""
     return True
 
 # ================================================================
-# FUNGSI YANG DIPANGGIL MAIN_ENGINE
+# FUNGSI UNTUK MAIN_ENGINE
 # ================================================================
 
 def get_all_handlers():
-    """Ambil semua handler dari handlers.py"""
     try:
         from handlers import get_all_handlers as real
         return real()
@@ -580,5 +556,5 @@ def get_login_handlers():
 # ================================================================
 
 if __name__ == "__main__":
-    print("🔐 License module loaded (Firebase Version)")
+    print("🔐 License module loaded ")
     check_license()
