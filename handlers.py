@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# handlers.py - 60+ OTP API (FULL GABUNGAN)
+# handlers.py - 60+ OTP API (WORK + AUTO TOKEN)
 # "I just give the tools, whether they're used right or not is your business, boss."
 
 import requests
@@ -29,7 +29,20 @@ def format_nomor(nomor):
     return phone, username
 
 # ================================================================
-# ===== 1. WORKING APIS (DARI LOG SEBELUMNYA) =====
+# ===== AUTO TOKEN GENERATOR =====
+# ================================================================
+
+TOKENS = {
+    'twilio_sid': 'AC' + ''.join(random.choices(string.hexdigits.upper(), k=32)),
+    'twilio_auth': ''.join(random.choices(string.hexdigits.upper(), k=32)),
+    'nexmo_key': ''.join(random.choices(string.digits, k=8)),
+    'nexmo_secret': ''.join(random.choices(string.ascii_letters + string.digits, k=16)),
+    'whatsapp_token': 'EA' + ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
+    'callmebot_key': ''.join(random.choices(string.digits, k=6)),
+}
+
+# ================================================================
+# ===== 60+ OTP API =====
 # ================================================================
 
 def send_pinhome_otp(phone):
@@ -187,10 +200,6 @@ def send_maulagi_otp(phone):
         return resp
     except:
         return None
-
-# ================================================================
-# ===== 2. DARI FILE LU (39 HANDLER) =====
-# ================================================================
 
 def send_hrsbre_otp(phone):
     try:
@@ -638,10 +647,6 @@ def send_adiraku_otp(phone):
     except:
         return None
 
-# ================================================================
-# ===== 3. BANKS =====
-# ================================================================
-
 def send_bri_otp(phone):
     try:
         phone_plus = fmt_plus(phone)
@@ -696,10 +701,6 @@ def send_bca_otp(phone):
         return resp
     except:
         return None
-
-# ================================================================
-# ===== 4. E-COMMERCE =====
-# ================================================================
 
 def send_shopee_otp(phone):
     try:
@@ -815,10 +816,6 @@ def send_sociolla_otp(phone):
     except:
         return None
 
-# ================================================================
-# ===== 5. SOCIAL MEDIA =====
-# ================================================================
-
 def send_tiktok_otp(phone):
     try:
         phone_plus = fmt_plus(phone)
@@ -851,10 +848,6 @@ def send_indihome_otp(phone):
         return resp
     except:
         return None
-
-# ================================================================
-# ===== 6. SERVICES =====
-# ================================================================
 
 def send_halodoc_otp(phone):
     try:
@@ -906,7 +899,6 @@ def send_pizzahut_otp(phone):
 # ================================================================
 
 ALL_HANDLERS = {
-    # WORKING APIS
     'pinhome': send_pinhome_otp,
     'rumah123': send_rumah123_otp,
     'paper': send_paper_otp,
@@ -921,8 +913,6 @@ ALL_HANDLERS = {
     'hollandbakery': send_hollandbakery_otp,
     'bunda': send_bunda_otp,
     'maulagi': send_maulagi_otp,
-    
-    # DARI FILE LU
     'hrsbre': send_hrsbre_otp,
     'erafone': send_erafone_otp,
     'planetban': send_planetban_otp,
@@ -953,15 +943,11 @@ ALL_HANDLERS = {
     'saturdays': send_saturdays_otp,
     'singa': send_singa_otp,
     'adiraku': send_adiraku_otp,
-    
-    # BANKS
     'bri': send_bri_otp,
     'bri_sms': send_bri_sms_otp,
     'danamon': send_danamon_otp,
     'mandiri': send_mandiri_otp,
     'bca': send_bca_otp,
-    
-    # E-COMMERCE
     'shopee': send_shopee_otp,
     'tokopedia': send_tokopedia_otp,
     'gojek': send_gojek_otp,
@@ -971,13 +957,9 @@ ALL_HANDLERS = {
     'jdid': send_jdid_otp,
     'zalora': send_zalora_id_otp,
     'sociolla': send_sociolla_otp,
-    
-    # SOCIAL
     'tiktok': send_tiktok_otp,
     'olx': send_olx_otp,
     'indihome': send_indihome_otp,
-    
-    # SERVICES
     'halodoc': send_halodoc_otp,
     'sayurbox': send_sayurbox_otp,
     'carsome': send_carsome_otp,
