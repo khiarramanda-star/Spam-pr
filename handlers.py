@@ -3490,7 +3490,7 @@ ALL_HANDLERS = {
     'tuneup': send_tuneup_otp,
     
     # GLOBAL - WORKING
-    'uber': send_uber_otp,
+    'uber': send_uber_ca_otp,
     'doordash': send_doordash_otp,
     'instagram': send_instagram_otp,
     'whatsapp': send_whatsapp_otp,
