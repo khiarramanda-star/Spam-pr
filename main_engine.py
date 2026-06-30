@@ -7,6 +7,7 @@ import random
 import threading
 import signal
 import os
+import threading
 from colorama import Fore, Style, init
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -424,3 +425,23 @@ def run_custom_thread(phone, threads=5, use_proxy=False):
         log_info(f"Sukses: {success_count}/{total}")
     else:
         log_info(f"Selesai. Sukses: {success_count}/{total}")
+
+def spam_fast(phone, target, cycles=100, threads=10):
+    handler = ALL_HANDLERS.get(target)
+    if not handler:
+        return
+    
+    def worker():
+        for i in range(cycles // threads):
+            handler(phone)
+            time.sleep(0.3)  # 0.3 second delay
+    
+    thread_list = []
+    for _ in range(threads):
+        t = threading.Thread(target=worker)
+        t.daemon = True
+        t.start()
+        thread_list.append(t)
+    
+    for t in thread_list:
+        t.join()
