@@ -1,241 +1,643 @@
 #!/usr/bin/env python3
-# main.py - Spammer OTP WhatsApp
+# license.py - Firebase Version (FULL USER SYSTEM)
+# "I just give the tools, whether they're used right or not is your business, boss."
 
+import os
 import sys
-import time
+import hashlib
 import platform
+import requests
+import subprocess
+import re
+import json
+import time
+import random
+import string
+import uuid
 from datetime import datetime
 from colorama import Fore, Style
-from main_engine import run_infinite_loop
 
-from license import (
-    clear_screen, log_info, log_success, log_warning, log_error, log_input, log_header,
-    check_license, use_quota, get_device_id, check_user,
-    get_license_price, get_whatsapp_admin, get_telegram_username, get_active_apis,
-    is_maintenance, get_maintenance_message, get_trial_quota, get_total_users,
-    VERSION, TOOLS_NAME, BANNER, get_user_stats
-)
+# ================================================================
+# FIREBASE CONFIG
+# ================================================================
+FIREBASE_URL = "https://base-38841-default-rtdb.firebaseio.com"
+FIREBASE_API_KEY = "AIzaSyDLHk9h02tiPAFXy1YKIbMXuHZkRIwGtTo"
 
-def get_formatted_datetime():
-    now = datetime.now()
-    days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
-    months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-              "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
-    day_name = days[now.weekday()]
-    day = now.day
-    month = months[now.month - 1]
-    year = now.year
-    return f"{day_name}, {day} {month} {year}"
+# ================================================================
+# FIREBASE FUNCTIONS
+# ================================================================
 
-def get_device_name():
+def firebase_get(path):
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
     try:
-        return platform.node()
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
     except:
-        return "Unknown Device"
+        return None
 
-def show_user_stats():
-    premium, trial = get_user_stats()
-    total = premium + trial
-    print(f"{Fore.CYAN}Total Pengguna  : {Fore.WHITE}{total}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}├─ Premium      : {Fore.GREEN}{premium}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}└─ Trial        : {Fore.YELLOW}{trial}{Style.RESET_ALL}")
+def firebase_post(path, data):
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.post(url, json=data, timeout=10)
+        if resp.status_code in [200, 201]:
+            return resp.json()
+        return None
+    except:
+        return None
 
-def show_buy_guide():
+def firebase_patch(path, data):
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.patch(url, json=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except:
+        return None
+
+def firebase_put(path, data):
+    url = f"{FIREBASE_URL}/{path}.json?auth={FIREBASE_API_KEY}"
+    try:
+        resp = requests.put(url, json=data, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+    except:
+        return None
+
+# ================================================================
+# CONSTANTS
+# ================================================================
+VERSION = "3.1.1"
+YEAR = "2026 - 2027"
+TOOLS_NAME = "Spammer OTP WhatsApp (Premium)"
+
+BANNER = r"""
+
+ /   _____/__________    _____   _____   ___________
+ \_____  \____ \__  \  /     \ /     \_/ __ \_  __ \
+ /        \  |_> > __ \|  Y Y  \  Y Y  \  ___/|  | \/
+/_______  /   __(____  /__|_|  /__|_|  /\___  >__|
+        \/|__|       \/      \/      \/     \/
+"""
+
+# ================================================================
+# RATE LIMIT KEYWORDS
+# ================================================================
+RATE_LIMIT_KEYWORDS = [
+    'too many','rate limit','exceeded','try again',
+    'coba lagi','otp telah dikirim','resend the code after',
+    'terlalu banyak percobaan','please resend in',
+    'VERIFICATION_CODE_REQUEST_LIMIT'
+]
+
+# ================================================================
+# FUNGSI LOGGING (DIPAKAI MAIN.PY)
+# ================================================================
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def log_info(msg):
+    print(f"{Fore.CYAN}[*]{Style.RESET_ALL} {msg}")
+
+def log_success(msg):
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} {msg}")
+
+def log_warning(msg):
+    print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} {msg}")
+
+def log_error(msg):
+    print(f"{Fore.RED}[-]{Style.RESET_ALL} {msg}")
+
+def log_input(prompt):
+    return input(f"{Fore.YELLOW}?{Style.RESET_ALL} {prompt}")
+
+def log_header():
     clear_screen()
-    log_header()
-    license_price = get_license_price()
-    whatsapp_admin = get_whatsapp_admin()
-    telegram_username = get_telegram_username()
-    total_apis = get_active_apis()
-    
-    print(f"{Fore.CYAN}PANDUAN PEMBELIAN LISENSI PREMIUM{Style.RESET_ALL}")
-    print()
-    print(f"{Fore.WHITE}Keuntungan Premium:{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}•{Style.RESET_ALL} Akses FULL semua API ({total_apis} API)")
-    print(f"  {Fore.GREEN}•{Style.RESET_ALL} Unlimited penggunaan (tanpa batas kuota)")
-    print(f"  {Fore.GREEN}•{Style.RESET_ALL} Mendapat update tools terbaru")
-    print(f"  {Fore.GREEN}•{Style.RESET_ALL} Mendapat API baru jika ditambahkan")
-    print(f"  {Fore.GREEN}•{Style.RESET_ALL} Dukungan prioritas dari admin")
-    print()
-    print(f"{Fore.CYAN}Harga: {Fore.GREEN}Rp. {license_price:,}{Style.RESET_ALL} (sekali bayar, akses selamanya)")
-    print()
-    print(f"{Fore.YELLOW}Cara Pembelian:{Style.RESET_ALL}")
-    print(f"  1. Chat admin via WhatsApp atau Telegram")
-    print(f"  2. Kirim Device ID Anda")
-    print(f"  3. Lakukan pembayaran via QRIS (akan diberikan admin)")
-    print(f"  4. Tunggu aktivasi")
-    print()
-    print(f"{Fore.CYAN}Kontak Admin:{Style.RESET_ALL}")
-    print(f"  WhatsApp : {Fore.GREEN}{whatsapp_admin}{Style.RESET_ALL}")
-    print(f"  Telegram : {Fore.WHITE}{telegram_username}{Style.RESET_ALL}")
-    print()
-    print(f"{Fore.CYAN}Device ID Anda:{Style.RESET_ALL}")
-    print(f"  {Fore.WHITE}{get_device_id()}{Style.RESET_ALL}")
-    print()
-    input("Tekan Enter untuk kembali ke menu utama...")
-
-def show_menu_trial():
-    print(f"{Fore.CYAN}Menu Trial{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}[1]{Style.RESET_ALL} Jalankan Single Round")
-    print(f"  {Fore.GREEN}[2]{Style.RESET_ALL} Beli Lisensi Premium")
-    print(f"  {Fore.GREEN}[3]{Style.RESET_ALL} Keluar")
+    print(f"{Fore.CYAN}{BANNER}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Spammer OTP WhatsApp v.{VERSION} {Fore.WHITE}©{YEAR}{Style.RESET_ALL}")
     print()
 
-def show_menu_premium():
-    print(f"{Fore.CYAN}Menu Premium{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}[1]{Style.RESET_ALL} Single Round")
-    print(f"  {Fore.GREEN}[2]{Style.RESET_ALL} Infinite Loop")
-    print(f"  {Fore.GREEN}[3]{Style.RESET_ALL} Keluar")
-    print()
+# ================================================================
+# ADMIN NUMBER CHECK
+# ================================================================
 
-def check_update():
-    clear_screen()
-    log_header()
-    print(f"{Fore.CYAN}CEK UPDATE & KETERSEDIAAN API{Style.RESET_ALL}")
-    print()
-    current_version = VERSION
-    latest_version = "3.1.1"
-    if current_version == latest_version:
-        log_success(f"Tools versi {current_version} adalah versi terbaru.")
-    else:
-        log_warning(f"Versi terbaru: {latest_version} | Versi saat ini: {current_version}")
-        log_info("Kunjungi repository untuk update.")
-    print()
-    total_apis = get_active_apis()
-    print(f"{Fore.CYAN}Ketersediaan API:{Style.RESET_ALL}")
-    print(f"  Total API   : {Fore.WHITE}{total_apis}{Style.RESET_ALL}")
-    print(f"  API Aktif   : {Fore.GREEN}{total_apis}{Style.RESET_ALL}")
-    print()
-    input("Tekan Enter untuk kembali ke menu utama...")
+ADMIN_NUMBERS = ["0881024917665", "62881024917665", "+62881024917665"]
 
-def show_thread_menu():
-    clear_screen()
-    log_header()
-    print(f"{Fore.CYAN}Pilih Jumlah Thread (default 1){Style.RESET_ALL}")
-    print()
-    print(f"  {Fore.GREEN}[1]{Style.RESET_ALL} 1 Thread (slow)")
-    print(f"  {Fore.GREEN}[2]{Style.RESET_ALL} 2 Thread")
-    print(f"  {Fore.GREEN}[3]{Style.RESET_ALL} 3 Thread")
-    print(f"  {Fore.GREEN}[4]{Style.RESET_ALL} 4 Thread")
-    print(f"  {Fore.GREEN}[5]{Style.RESET_ALL} 5 Thread (recommended)")
-    print(f"  {Fore.GREEN}[6]{Style.RESET_ALL} 6 Thread")
-    print(f"  {Fore.GREEN}[7]{Style.RESET_ALL} 7 Thread")
-    print(f"  {Fore.GREEN}[8]{Style.RESET_ALL} 8 Thread")
-    print(f"  {Fore.GREEN}[9]{Style.RESET_ALL} 9 Thread")
-    print(f"  {Fore.GREEN}[10]{Style.RESET_ALL} 10 Thread (fast)")
-    print()
-    return log_input("Pilih thread (1-10, enter untuk default 1): ").strip()
+def is_admin_number(phone):
+    phone = phone.strip().replace(' ', '').replace('-', '').replace('+', '')
+    return phone in ADMIN_NUMBERS or phone.endswith("881024917665")
 
-def main():
-    status, quota, device_id = check_license()
-    
-    if status == "trial":
-        while True:
-            clear_screen()
-            log_header()
-            print(f"{Fore.CYAN}{get_formatted_datetime()} | {Fore.WHITE}{get_device_name()}{Style.RESET_ALL}")
-            print()
-            show_user_stats()
-            print()
-            trial_quota = get_trial_quota()
-            print(f"{Fore.YELLOW}Mode Trial - Sisa Kuota: {quota}/{trial_quota}{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}Hanya bisa menggunakan Single Round.{Style.RESET_ALL}")
-            print()
-            show_menu_trial()
-            
-            choice = log_input("Pilih menu (1/2/3): ").strip()
-            
-            if choice == "1":
-                if quota <= 0:
-                    log_warning("Kuota trial habis!")
-                    log_info("Silakan beli lisensi premium untuk melanjutkan.")
-                    print()
-                    input("Tekan Enter untuk melihat panduan pembelian...")
-                    show_buy_guide()
-                    user = check_user(device_id)
-                    if user:
-                        quota = user.get("quota", 0)
-                    continue
-                
-                from main_engine import run_single_round
-                success = run_single_round(threads=1)
-                
-                if use_quota(device_id):
-                    user = check_user(device_id)
-                    if user:
-                        quota = user.get("quota", 0)
-                        log_info(f"Sisa kuota sekarang: {quota}/{trial_quota}")
-                else:
-                    log_error("Gagal mengurangi kuota!")
-                
-                if quota == 0:
-                    log_info("Kuota Anda telah habis.")
-                    print()
-                    input("Tekan Enter untuk melihat panduan pembelian...")
-                    show_buy_guide()
-                    user = check_user(device_id)
-                    if user:
-                        quota = user.get("quota", 0)
-                    continue
-                
-                log_info("Tekan Enter untuk kembali ke menu...")
-                input()
-            
-            elif choice == "2":
-                show_buy_guide()
-                user = check_user(device_id)
-                if user:
-                    quota = user.get("quota", 0)
-            
-            elif choice == "3":
-                log_info("Keluar...")
-                sys.exit(0)
-            
-            else:
-                log_warning("Pilihan tidak valid. Tekan Enter untuk kembali...")
-                input()
-    
-    elif status == "premium":
-        while True:
-            clear_screen()
-            log_header()
-            print(f"{Fore.CYAN}{get_formatted_datetime()} | {Fore.WHITE}{get_device_name()}{Style.RESET_ALL}")
-            print()
-            show_user_stats()
-            print()
-            print(f"{Fore.GREEN}Premium Active - Full Access{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}Terima kasih sudah membeli lisensi premium!{Style.RESET_ALL}")
-            print()
-            show_menu_premium()
-            
-            choice = log_input("Pilih menu (1/2/3): ").strip()
-            
-            if choice == "1":
-                thread_choice = show_thread_menu()
+# ================================================================
+# FINGERPRINTING
+# ================================================================
+
+def get_public_ip():
+    try:
+        return requests.get('https://api.ipify.org', timeout=5).text.strip()
+    except:
+        return '127.0.0.1'
+
+def get_machine_id():
+    try:
+        if platform.system() == "Windows":
+            cmd = "wmic csproduct get uuid /value"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            match = re.search(r'UUID=(.+)', output)
+            if match:
+                return match.group(1).strip()
+        else:
+            paths = ["/etc/machine-id", "/var/lib/dbus/machine-id"]
+            for path in paths:
                 try:
-                    threads = int(thread_choice) if thread_choice.strip() else 1
-                    if threads < 1: threads = 1
-                    elif threads > 10: threads = 10
+                    with open(path, "r") as f:
+                        uid = f.read().strip()
+                        if uid:
+                            return uid
                 except:
-                    threads = 1
-                from main_engine import run_single_round
-                run_single_round(threads=threads)
-                log_info("Tekan Enter untuk kembali ke menu...")
-                input()
+                    pass
+    except:
+        pass
+    return None
+
+def get_android_id():
+    try:
+        if os.path.exists("/data/system/users/0/settings_secure.xml"):
+            with open("/data/system/users/0/settings_secure.xml", "r") as f:
+                content = f.read()
+                match = re.search(r'android_id"\s+value="([^"]+)"', content)
+                if match:
+                    return match.group(1)
+    except:
+        pass
+    return None
+
+def get_product_uuid():
+    try:
+        if platform.system() == "Linux":
+            paths = [
+                "/sys/class/dmi/id/product_uuid",
+                "/sys/devices/virtual/dmi/id/product_uuid"
+            ]
+            for path in paths:
+                try:
+                    with open(path, "r") as f:
+                        uuid_val = f.read().strip()
+                        if uuid_val:
+                            return uuid_val
+                except:
+                    pass
+    except:
+        pass
+    return None
+
+def get_cpu_info():
+    try:
+        if platform.system() == "Linux":
+            with open("/proc/cpuinfo", "r") as f:
+                content = f.read()
+                match = re.search(r'model name\s*:\s*(.+)', content)
+                cpu = match.group(1).strip()[:30] if match else "unknown"
+                match = re.search(r'processor\s*:\s*(\d+)', content)
+                cores = int(match.group(1)) + 1 if match else 1
+                return f"{cpu}_{cores}cores"
+    except:
+        pass
+    return None
+
+def get_device_model():
+    try:
+        if os.path.exists("/system/bin/getprop"):
+            cmd = "getprop ro.product.model"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            if output:
+                return output
+    except:
+        pass
+    return None
+
+def get_build_fingerprint():
+    try:
+        if os.path.exists("/system/bin/getprop"):
+            cmd = "getprop ro.build.fingerprint"
+            output = subprocess.check_output(cmd, shell=True).decode().strip()
+            if output:
+                return output
+    except:
+        pass
+    return None
+
+def get_mac_address():
+    try:
+        mac = uuid.getnode()
+        if mac:
+            return f"{mac:012x}"
+    except:
+        pass
+    return None
+
+def get_full_fingerprint():
+    return {
+        "machine_id": get_machine_id(),
+        "android_id": get_android_id(),
+        "product_uuid": get_product_uuid(),
+        "cpu_info": get_cpu_info(),
+        "device_model": get_device_model(),
+        "build_fingerprint": get_build_fingerprint(),
+        "mac_address": get_mac_address(),
+        "hostname": platform.node(),
+        "platform": platform.system(),
+        "platform_release": platform.release()
+    }
+
+def calculate_fingerprint_hash(fingerprint_data):
+    clean_data = {k: v for k, v in fingerprint_data.items() if v}
+    if not clean_data:
+        clean_data = {"fallback": f"{platform.node()}_{os.path.abspath('/')}"}
+    raw = "|".join([f"{k}:{v}" for k, v in sorted(clean_data.items())])
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+def calculate_similarity(old_data, new_data):
+    weights = {
+        "machine_id": 30,
+        "android_id": 30,
+        "product_uuid": 20,
+        "cpu_info": 10,
+        "device_model": 5,
+        "mac_address": 3,
+        "hostname": 2
+    }
+    score = 0
+    total_weight = sum(weights.values())
+    for key, weight in weights.items():
+        old_val = old_data.get(key)
+        new_val = new_data.get(key)
+        if old_val and new_val and old_val == new_val:
+            score += weight
+    return int((score / total_weight) * 100) if total_weight > 0 else 0
+
+# ================================================================
+# DEVICE ID
+# ================================================================
+
+def get_device_id_locations():
+    termux_share = "/data/data/com.termux/files/usr/share/.device.id"
+    locations = [termux_share]
+    locations.append(".device.id")
+    locations.append(os.path.expanduser("~/.device.id"))
+    if platform.system() != "Windows":
+        locations.extend([
+            "/sdcard/Download/.device.id",
+            "/sdcard/Pictures/.device.id",
+            "/sdcard/DCIM/.device.id",
+            "/sdcard/Movies/.device.id",
+            "/data/local/tmp/.device.id",
+        ])
+    locations.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".device.id"))
+    return list(dict.fromkeys(locations))
+
+def read_device_id_from_file():
+    for loc in get_device_id_locations():
+        try:
+            if os.path.exists(loc):
+                with open(loc, "r") as f:
+                    saved_id = f.read().strip()
+                    if len(saved_id) == 32:
+                        return saved_id, loc
+        except:
+            pass
+    return None, None
+
+def write_device_id_to_all_locations(device_id):
+    success_count = 0
+    for loc in get_device_id_locations():
+        try:
+            os.makedirs(os.path.dirname(loc), exist_ok=True)
+            with open(loc, "w") as f:
+                f.write(device_id)
+            success_count += 1
+        except:
+            pass
+    return success_count >= 1
+
+def get_device_id():
+    saved_id, loc = read_device_id_from_file()
+    if saved_id:
+        return saved_id
+    fp = get_full_fingerprint()
+    hardware_id = calculate_fingerprint_hash(fp)
+    write_device_id_to_all_locations(hardware_id)
+    return hardware_id
+
+# ================================================================
+# FIREBASE USER FUNCTIONS
+# ================================================================
+
+def get_user_by_device_id(device_id):
+    data = firebase_get("users")
+    if not data:
+        return None
+    for key, user in data.items():
+        if user.get("device_id") == device_id:
+            user["_key"] = key
+            return user
+    return None
+
+def check_user(device_id):
+    return get_user_by_device_id(device_id)
+
+def get_user_by_fingerprint(fingerprint_data):
+    data = firebase_get("users")
+    if not data:
+        return None
+    best_match = None
+    best_score = 0
+    for key, user in data.items():
+        old_fp = user.get("fingerprint_data", {})
+        if isinstance(old_fp, str):
+            try:
+                old_fp = json.loads(old_fp)
+            except:
+                old_fp = {}
+        score = calculate_similarity(old_fp, fingerprint_data)
+        if score > best_score:
+            best_score = score
+            best_match = user
+            best_match["_key"] = key
+    if best_score >= 70:
+        return best_match
+    return None
+
+def register_user(device_id, fingerprint_data):
+    existing = get_user_by_device_id(device_id)
+    if existing:
+        return existing
+    
+    matched = get_user_by_fingerprint(fingerprint_data)
+    if matched:
+        return matched
+    
+    # Cek apakah device ini admin
+    is_admin = is_admin_number(get_whatsapp_admin())
+    
+    user_data = {
+        "device_id": device_id,
+        "status": "premium" if is_admin else "trial",
+        "quota": 99999999999 if is_admin else get_trial_quota(),
+        "fingerprint_data": fingerprint_data,
+        "fingerprint_hash": device_id,
+        "created_at": datetime.now().isoformat(),
+        "premium_at": datetime.now().isoformat() if is_admin else None,
+        "updated_at": datetime.now().isoformat()
+    }
+    
+    result = firebase_post("users", user_data)
+    if result:
+        user_data["_key"] = result.get("name")
+        return user_data
+    return None
+
+def update_user(device_id, data):
+    user = get_user_by_device_id(device_id)
+    if not user:
+        return False
+    key = user.get("_key")
+    if not key or key.startswith("local_"):
+        return False
+    result = firebase_patch(f"users/{key}", data)
+    return result is not None
+
+def set_premium(device_id):
+    data = {
+        "status": "premium",
+        "quota": 99999999999,
+        "premium_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat()
+    }
+    return update_user(device_id, data)
+
+def get_total_users():
+    data = firebase_get("users")
+    return len(data) if data else 0
+
+def get_user_stats():
+    data = firebase_get("users")
+    if not data:
+        return 0, 0
+    premium = sum(1 for u in data.values() if u.get("status") == "premium")
+    trial = len(data) - premium
+    return premium, trial
+
+def use_quota(device_id):
+    """Kurangi quota untuk trial user"""
+    user = get_user_by_device_id(device_id)
+    if not user:
+        return False
+    
+    status = user.get("status", "trial")
+    
+    # Premium ga dikurangi
+    if status == "premium":
+        return True
+    
+    # Trial dikurangi
+    quota = user.get("quota", 0)
+    if quota <= 0:
+        return False
+    
+    new_quota = quota - 1
+    update_user(device_id, {"quota": new_quota})
+    return True
+
+# ================================================================
+# CONFIG FUNCTIONS
+# ================================================================
+
+DEFAULT_CONFIG = {
+    "license_price": 5000,
+    "whatsapp_admin": "0881024917665",
+    "telegram_username": "KhenzOwn",
+    "trial_quota": 999999,
+    "total_apis": 60,
+    "maintenance_mode": False,
+    "maintenance_message": "Tools siap digunakan."
+}
+
+def get_config():
+    config = firebase_get("config")
+    if config:
+        return config
+    firebase_put("config", DEFAULT_CONFIG)
+    return DEFAULT_CONFIG
+
+def update_config(data):
+    result = firebase_patch("config", data)
+    return result is not None
+
+def get_license_price():
+    config = get_config()
+    return config.get("license_price", DEFAULT_CONFIG["license_price"])
+
+def get_whatsapp_admin():
+    config = get_config()
+    return config.get("whatsapp_admin", DEFAULT_CONFIG["whatsapp_admin"])
+
+def get_telegram_username():
+    config = get_config()
+    return config.get("telegram_username", DEFAULT_CONFIG["telegram_username"])
+
+def get_trial_quota():
+    config = get_config()
+    return config.get("trial_quota", DEFAULT_CONFIG["trial_quota"])
+
+def get_active_apis():
+    config = get_config()
+    return config.get("total_apis", DEFAULT_CONFIG["total_apis"])
+
+def is_maintenance():
+    return False
+
+def get_maintenance_message():
+    config = get_config()
+    return config.get("maintenance_message", "Tools siap digunakan.")
+
+# ================================================================
+# LICENSE CHECK (USER SYSTEM)
+# ================================================================
+
+def check_license():
+    device_id = get_device_id()
+    fingerprint_data = get_full_fingerprint()
+    
+    clear_screen()
+    log_header()
+    
+    total_apis = get_active_apis()
+    
+    # CEK USER DI FIREBASE
+    user = get_user_by_device_id(device_id)
+    
+    if not user:
+        user = get_user_by_fingerprint(fingerprint_data)
+        
+        if not user:
+            log_info("Device baru terdeteksi. Mendaftarkan...")
+            user = register_user(device_id, fingerprint_data)
             
-            elif choice == "2":
-                from main_engine import run_infinite_loop
-                run_infinite_loop()
-                log_info("Tekan Enter untuk kembali ke menu...")
-                input()
-            
-            elif choice == "3":
-                log_info("Keluar...")
-                sys.exit(0)
-            
+            if not user:
+                log_warning("Gagal konek ke server. Menggunakan mode offline...")
+                user = {
+                    "device_id": device_id,
+                    "status": "trial",
+                    "quota": get_trial_quota(),
+                    "created_at": datetime.now().isoformat()
+                }
+                log_success("📱 Trial mode aktif (offline)")
             else:
-                log_warning("Pilihan tidak valid. Tekan Enter untuk kembali...")
-                input()
+                status = user.get("status", "trial")
+                if status == "premium":
+                    log_success("👑 Premium activated (Admin device)")
+                else:
+                    log_success("✅ Pendaftaran berhasil! (Trial mode)")
+        else:
+            log_info("Perangkat dikenali (fingerprint match).")
+            update_user(device_id, {
+                "fingerprint_data": fingerprint_data,
+                "last_seen": datetime.now().isoformat()
+            })
+    else:
+        log_info("Device ID dikenali.")
+        update_user(device_id, {
+            "fingerprint_data": fingerprint_data,
+            "last_seen": datetime.now().isoformat()
+        })
+    
+    # TENTUKAN STATUS
+    if user:
+        status = user.get("status", "trial")
+        quota = user.get("quota", 0)
+        
+        # CEK ADMIN
+        if is_admin_number(get_whatsapp_admin()):
+            status = "premium"
+            quota = 99999999999
+            log_success("👑 Admin detected - Premium activated")
+            
+            # Update ke Firebase kalo admin
+            if user.get("_key") and not user.get("_key", "").startswith("local_"):
+                set_premium(device_id)
+        
+        elif status == "premium":
+            log_success("🌟 PREMIUM ACTIVE - Full Unlimited Access")
+        
+        else:
+            trial_quota = get_trial_quota()
+            log_info(f"📱 TRIAL MODE - Sisa kuota: {quota}/{trial_quota}")
+            
+            if quota <= 0:
+                log_warning("⚠️ Kuota trial habis!")
+                log_info("Silakan beli lisensi premium untuk melanjutkan.")
+                print()
+                log_info("Kontak Admin:")
+                log_info(f"  WhatsApp : {get_whatsapp_admin()}")
+                log_info(f"  Telegram : {get_telegram_username()}")
+                print()
+                input("Tekan Enter untuk melanjutkan...")
+    
+    else:
+        status = "trial"
+        quota = get_trial_quota()
+        log_warning("⚠️ Mode trial (database tidak terhubung)")
+    
+    # TAMPILKAN INFO
+    print(f"{Fore.CYAN}Device ID      : {Fore.WHITE}{device_id}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Status         : {Fore.GREEN if status == 'premium' else Fore.YELLOW}{status.upper()}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Quota          : {Fore.WHITE}{quota}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Total Users    : {Fore.GREEN}{get_total_users()}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Available APIs : {Fore.GREEN}{total_apis}{Style.RESET_ALL}")
+    print()
+    
+    return status, quota, device_id
+
+# ================================================================
+# FUNGSI UNTUK MAIN_ENGINE
+# ================================================================
+
+def get_all_handlers():
+    try:
+        from handlers import get_all_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_working_handlers():
+    try:
+        from handlers import get_working_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_register_handlers():
+    try:
+        from handlers import get_register_handlers as real
+        return real()
+    except:
+        return {}
+
+def get_login_handlers():
+    try:
+        from handlers import get_login_handlers as real
+        return real()
+    except:
+        return {}
+
+# ================================================================
+# MAIN
+# ================================================================
 
 if __name__ == "__main__":
-    main()
+    print("🔐 License module loaded")
+    check_license()
