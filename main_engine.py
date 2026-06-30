@@ -19,7 +19,7 @@ from license import (
     RATE_LIMIT_KEYWORDS, get_active_apis, is_admin_number
 )
 from utils import normalize, fmt_08, fmt_nocode, fmt_plus, fmt_phone_only, get_public_ip, generate_multipart, extract_csrf, get_random_user_agent, get_headers_with_random_ua
-from handlers import (
+from handlers import ALL_HANDLERS
 from targets import TARGETS
 
 print_lock = threading.Lock()
